@@ -20,13 +20,13 @@
 //////////////////////////////////////////////////////////////////////////////////
 module pc(
 	input clk,rst,
-	output reg [31:0] pc,	//指令寄存器地址，指令coe文件中只有6条，3位已足够，但为了之后通用，使用了32位。
+	output reg [3:0] pc,	//指令寄存器地址，指令coe文件中只有6条，3位已足够，使用了4位。
 	output wire inst_ce		//暂时先默认一直为1
     );
 
-	wire [31:0] D;
+	wire [3:0] D;
 
-	adder #(.N(32)) adder(1'b0,pc,32'h4,D);
+	adder #(.N(4)) adder(1'b0,pc,4'h4,D);
 
 	assign inst_ce = 1'b1;
 	always @(posedge clk) begin
