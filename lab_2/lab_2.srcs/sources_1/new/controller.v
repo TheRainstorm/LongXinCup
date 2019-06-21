@@ -21,6 +21,25 @@
 
 
 module controller(
-
+	input [5:0] op,
+	input [5:0] funct,
+	output [5:0] main_control,
+	output [2:0] alu_control
     );
+	
+	wire [1:0] alu_op;
+
+	main_decoder main_decoder(
+		.op(op),
+
+		.main_control(main_control),
+		.alu_op(alu_op)
+	);
+
+	alu_decoder alu_decoder(
+		.funct(funct),
+		.alu_op(alu_op),
+
+		.alu_control(alu_control)
+	);
 endmodule
