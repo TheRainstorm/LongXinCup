@@ -1,7 +1,7 @@
 // Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
-// Date        : Fri Jun 21 15:47:15 2019
+// Date        : Sun Jun 23 00:08:21 2019
 // Host        : LAPTOP-E0ETQGUK running 64-bit major release  (build 9200)
 // Command     : write_verilog -force -mode synth_stub
 //               D:/GithubRepo/LongXinCup/lab_2/lab_2.srcs/sources_1/ip/ram/ram_stub.v
@@ -15,11 +15,11 @@
 // Please paste the declaration into a Verilog source file or add the file as an additional source.
 (* x_core_info = "blk_mem_gen_v8_4_2,Vivado 2018.3" *)
 module ram(clka, ena, wea, addra, dina, douta)
-/* synthesis syn_black_box black_box_pad_pin="clka,ena,wea[3:0],addra[3:0],dina[31:0],douta[31:0]" */;
+/* synthesis syn_black_box black_box_pad_pin="clka,ena,wea[3:0],addra[7:0],dina[31:0],douta[31:0]" */;
   input clka;
   input ena;
   input [3:0]wea;
-  input [3:0]addra;
+  input [7:0]addra;
   input [31:0]dina;
   output [31:0]douta;
 endmodule

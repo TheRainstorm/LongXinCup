@@ -20,16 +20,16 @@
 //////////////////////////////////////////////////////////////////////////////////
 module pc(
 	input clk,rst,
-	output reg [3:0] pc,	//指令寄存器地址，指令coe文件中只有6条，3位已足够，使用了4位。
+	output reg [7:0] pc,	//指令寄存器地址，指令coe文件中只有6条指令，MIPS使用字节寻址，6*4=24，至少需要5位，这里使用8位
 	output wire inst_ce		//暂时先默认一直为1
     );
 
-	wire [3:0] D;
+	wire [7:0] D;
 
-	adder #(.N(4)) adder(1'b0,pc,4'h4,D);
+	adder #(.N(8)) adder(1'b0,pc,8'h4,D);
 
 	assign inst_ce = 1'b1;
-	always @(posedge clk) begin
+	always @(posedge clk,posedge rst) begin
 		if(rst) begin
 			pc <= 0;
 		end

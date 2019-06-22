@@ -27,27 +27,31 @@ module top(
 	output [7:0] ans,
 	output [9:0] led
     );
+
 	//divide clk
 	wire clk_1hz;
 	clk_div Clk_div(clk,rst,clk_1hz);
+
 	//PC
-	wire [3:0] pc;
+	wire [7:0] pc;
 	wire inst_ce;
 	pc PC(
-		.clk(clk),
+		.clk(clk_1hz),
 		.rst(rst),
 
 		.pc(pc),
 		.inst_ce(inst_ce)
 	);
+
 	//Fetch
 	wire [31:0] Instr;
 	ram Inst_Rom(
-		.clka(clk_1hz),
+		.clka(clk),
 		.addra(pc),
 
-		.douta(Instr),
+		.douta(Instr)
 	);//dina[31:0], ena, wea[3:0]未赋值
+
 	//seg7 display
 	display Display(
 		.clk(clk),
@@ -57,16 +61,18 @@ module top(
 		.seg(seg),
 		.ans(ans)
 	);
+
 	//Decode
 	wire [6:0] main_control;
 	wire [2:0] alu_control;
-	controller controller(
+	controller Controller(
 		.op(Instr[31:26]),
 		.funct(Instr[5:0]),
 
 		.main_control(main_control),
 		.alu_control(alu_control)
 	);
+
 	//led display
 	//main_control: {RegWrite,RegDst,AluSrc,Branch,MemWrite,MemtoReg,JUMP}
 	assign led = {alu_control,main_control};

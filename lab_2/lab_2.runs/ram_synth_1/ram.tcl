@@ -17,6 +17,10 @@ proc create_report { reportName command } {
     send_msg_id runtcl-5 warning "$msg"
   }
 }
+set_param synth.incrementalSynthesisCache D:/GithubRepo/LongXinCup/lab_2/.Xil/Vivado-3936-LAPTOP-E0ETQGUK/incrSyn
+set_param xicom.use_bs_reader 1
+set_msg_config -id {Synth 8-256} -limit 10000
+set_msg_config -id {Synth 8-638} -limit 10000
 set_param project.vivado.isBlockSynthRun true
 set_msg_config -msgmgr_mode ooc_run
 create_project -in_memory -part xc7a100tcsg324-1
@@ -27,6 +31,7 @@ set_param synth.vivado.isSynthRun true
 set_msg_config -source 4 -id {IP_Flow 19-2162} -severity warning -new_severity info
 set_property webtalk.parent_dir D:/GithubRepo/LongXinCup/lab_2/lab_2.cache/wt [current_project]
 set_property parent.project_path D:/GithubRepo/LongXinCup/lab_2/lab_2.xpr [current_project]
+set_property XPM_LIBRARIES XPM_MEMORY [current_project]
 set_property default_lib xil_defaultlib [current_project]
 set_property target_language Verilog [current_project]
 set_property ip_output_repo d:/GithubRepo/LongXinCup/lab_2/lab_2.cache/ip [current_project]
