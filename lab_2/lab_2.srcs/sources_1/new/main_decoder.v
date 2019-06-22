@@ -28,14 +28,14 @@ module main_decoder(
 	//main_control信号说明：
 	//RegWrite	RegDst	AluSrc	Branch	MemWrite	MemtoReg	JUMP
 	//[6]		[5]		[4]		[3]		[2]			[1]			[0]
-
-	// Instruction	Op		RegWrite	RegDst	AluSrc	Branch	MemWrite	MemtoReg	JUMP 	ALUOp 
+	// replace X with 0
+	// Instruction	Op		RegWrite	RegDst	AluSrc	Branch	MemWrite	MemtoReg	jump 	ALUOp
 	// R_type		000000	1			1		0		0		0			0			0		10
 	// lw			100011	1			0		1		0		0			1			0		00
-	// sw			101011	0			0		1		0		1			0			0		00
-	// beq			000100	0			0		0		1		0			0			0		01
+	// sw			101011	0			X		1		0		1			X			0		00
+	// beq			000100	0			X		0		1		0			X			0		01
 	// addi			001000	1			0		1		0		0			0			0		00
-	// j			000100	0			0		0		0		0			0			1		00		XX
+	// j			000100	0			X		X		X		0			X			1		XX
 
 	always @* begin
 		case(op)

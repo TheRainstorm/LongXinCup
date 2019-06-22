@@ -23,7 +23,7 @@
 module controller(
 	input [5:0] op,
 	input [5:0] funct,
-	output [5:0] main_control,
+	output [6:0] main_control,
 	output [2:0] alu_control
     );
 	
