@@ -1,7 +1,7 @@
 Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
-| Date         : Sun Jun 23 00:10:56 2019
+| Date         : Sun Jun 23 00:32:59 2019
 | Host         : LAPTOP-E0ETQGUK running 64-bit major release  (build 9200)
 | Command      : report_timing_summary -max_paths 10 -file top_timing_summary_routed.rpt -pb top_timing_summary_routed.pb -rpx top_timing_summary_routed.rpx -warn_on_violation
 | Design       : top
@@ -52,9 +52,9 @@ Table of Contents
 
 1. checking no_clock
 --------------------
- There are 68 register/latch pins with no clock driven by root clock pin: clk (HIGH)
+ There are 66 register/latch pins with no clock driven by root clock pin: clk (HIGH)
 
- There are 6 register/latch pins with no clock driven by root clock pin: Clk_div/clk_divided_reg/Q (HIGH)
+ There are 8 register/latch pins with no clock driven by root clock pin: Clk_div/clk_divided_reg/Q (HIGH)
 
 
 2. checking constant_clock

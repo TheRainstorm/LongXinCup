@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 2019/06/23 00:09:12
+// Create Date: 2019/06/23 00:19:43
 // Design Name: 
-// Module Name: pc_and_instr_rom_tb
+// Module Name: instr_rom_tb
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,18 +20,9 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module pc_and_instr_rom_tb;
+module instr_rom_tb;
 	reg clk,rst;
-
-	wire [7:0] pc;
-	wire inst_ce;
-	pc PC(
-		.clk(clk),
-		.rst(rst),
-
-		.inst_ce(inst_ce),
-		.pc(pc)
-	);
+	reg [7:0] pc;
 
 	wire [31:0] Instr;
 	ram Inst_Rom(
@@ -40,7 +31,7 @@ module pc_and_instr_rom_tb;
 		.addra(pc),
 
 		.douta(Instr)
-	);//dina[31:0], ena, wea[3:0]未赋值
+	);//dina[31:0], ena, wea[3:0]未赋�?
 
 	always #5 clk = ~clk;
 	initial begin
@@ -49,7 +40,13 @@ module pc_and_instr_rom_tb;
 		#2 rst = 1;
 		#2 rst = 0;
 
-		#100
+		pc = 8'b0000_0000;
+		#10
+		pc = 8'b0000_0100;
+		#10
+		pc = 8'b0000_1000;
+		#10
+		pc = 8'b0000_1100;
 		$finish;
 	end
 endmodule

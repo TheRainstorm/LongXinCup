@@ -7,7 +7,7 @@ module ram(clka, ena, wea, addra, dina, douta);
   input clka;
   input ena;
   input [3:0]wea;
-  input [3:0]addra;
+  input [7:0]addra;
   input [31:0]dina;
   output [31:0]douta;
 endmodule

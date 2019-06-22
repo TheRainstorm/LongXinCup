@@ -46,7 +46,8 @@ module top(
 	//Fetch
 	wire [31:0] Instr;
 	ram Inst_Rom(
-		.clka(clk),
+		.clka(clk_1hz),
+		.ena(inst_ce),
 		.addra(pc),
 
 		.douta(Instr)
