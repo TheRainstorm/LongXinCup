@@ -23,8 +23,8 @@
 
 module main_decoder(
 	input [5:0] op,
-	output reg [0:7] main_control,
-	output reg [1:0] alu_op
+	output [0:7] main_control,
+	output [1:0] alu_op
     );
 	//main_control信号说明：
 	//reg_write_en	reg_dst	alu_src	branch	mem_write	mem_to_reg	jump	mem_en
@@ -39,7 +39,7 @@ module main_decoder(
 	// addi			001000	00		1			0		1		0		0			0			0		0
 	// j			000100	xx		0			X		X		X		0			X			1		0
 
-	wire [0:9] result;
+	reg [0:9] result;
 	assign {alu_op,main_control}=result;
 	always @* begin
 		case(op)

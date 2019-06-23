@@ -48,6 +48,7 @@ module datapath(
 	assign mem_en = 		main_control[7];
 
     //MIPS核 和内存接口
+    wire [31:0] instr,read_data;
     assign read_data = Read_data; 
     assign instr = Instr;
     assign ALU_out = alu_result;
@@ -109,7 +110,7 @@ module datapath(
 	wire [31:0] alu_result;
 	alu ALU(
 		.a(rd1),.b(alu_src_b),
-		op(alu_control),
+		.op(alu_control),
 
 		.y(alu_result),
 		.overflow(),
