@@ -24,7 +24,14 @@ module datapath(
 	input [0:7] main_control,
 	input [2:0] alu_control,
 
-	output [31:0] instr
+	input [31:0] Read_data,     //read_data
+	input [31:0] Instr,         //instr
+
+    output [31:0] ALU_out,      //alu_result
+    output [31:0] Write_data,   //rd2
+    output [31:0] PC,           //pc
+    output mem_en,
+    output mem_write_en
     );
     wire reg_write_en, reg_dst, alu_src, branch, mem_write, mem_to_reg, jump, mem_en;
 	//main_control信号说明：
@@ -40,6 +47,12 @@ module datapath(
 	assign jump = 			main_control[6];
 	assign mem_en = 		main_control[7];
 
+    //MIPS核 和内存接口
+    assign read_data = Read_data; 
+    assign instr = Instr;
+    assign ALU_out = alu_result;
+    assign Write_data = rd2;
+    assign PC = pc;
 //PC
 	wire [31:0] pc; //读指令寄存器地址
 	pc #(32) PC(
@@ -110,29 +123,5 @@ module datapath(
 	//ALU输入选择
 	wire [31:0] alu_src_b;
 	mux2 #(32) MUX2_2(.d0(rd2),.d1(sign_imm),.s(alu_src),.y(alu_src_b));
-
-//指令存储器
-	wire [31:0] instr;
-	inst_ram Inst_RAM (
-		.clka(clk),    // input wire clka  
-		.ena(1'b1),      // input wire ena  使能
-		.wea(1'b0),      // input wire [3 : 0] wea  写使能
-		.addra(pc),  // input wire [4 : 0] addra   读地址
-		.dina(32'b0),    // input wire [31 : 0] dina    写数据
-
-		.douta(instr)  // output wire [31 : 0] douta    读数据
-	);
-	
-//数据存储器
-	wire [31:0] read_data;
-	data_ram Data_RAM (
-	  .clka(clk),    // input wire clka
-	  .ena(mem_en),      // input wire ena  使能
-	  .wea(mem_write_en),      // input wire [3 : 0] wea   写使能
-	  .addra(alu_result),  // input wire [9 : 0] addra  读地址
-	  .dina(ra2),    // input wire [31 : 0] dina    写数据
-
-	  .douta(read_data)  // output wire [31 : 0] douta  读数据
-	);
 
 endmodule
