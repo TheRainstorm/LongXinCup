@@ -26,16 +26,15 @@ module alu_decoder(
 	output reg [2:0] alu_control
     );
 
-// 	Opcode	AluOp	Operation	Funct	Alu function	Alu control
-// 	Lw		00		Load word	XXXXXX	Add				010
-// 	Sw		00		Store word	XXXXXX	Add				010
-// 	Beq		01		Branch equalXXXXXX	Subtact			110
-// 	R-type	10		Add			100000	Add				010
-// 					Subtract	100010	Subtract		110
-// 					And			100100	And				000
-// 					Or			100101	Or				001
-// 					Set-on-		101010	SLT				111
-//					less-than	
+// 	Opcode	AluOp	Funct	Alu function	Alu control
+// 	Lw		00		XXXXXX	Add				010
+// 	Sw		00		XXXXXX	Add				010
+// 	Beq		01		XXXXXX	Subtact			110
+// 	R-type	10		100000	Add				010
+// 					100010	Subtract		110
+// 					100100	And				000
+// 					100101	Or				001
+// 					101010	SLT				111	
 	
 	always @* begin
 		case({alu_op,funct})

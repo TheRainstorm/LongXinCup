@@ -1,5 +1,5 @@
-module sll2
-	#(parameter WIDTH=8) (
+module sl2
+	#(parameter WIDTH=32) (
 	input [WIDTH-1:0] x,
 	output [WIDTH-1:0] y
 	);
