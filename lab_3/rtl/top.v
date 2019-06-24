@@ -1,13 +1,22 @@
 module top(
-	input clk,rst
+	input clk,rst,
+
+	output [31:0] Write_data,
+	output [31:0] ALU_out,
+	output mem_write_en
 	);
 	
-	wire [31:0] ALU_out;
-    wire [31:0] Write_data;
+	// wire [31:0] ALU_out;
+ //    // wire [31:0] Write_data;
     wire [31:0] PC;
-	wire mem_en,mem_write_en;
+	// wire mem_en,mem_write_en;
+
+
+	wire [31:0] Read_data;
+	wire [31:0] Instr;
+	
 	mips MIPS(
-		.clk,.rst,
+		.clk(clk),.rst(rst),
 
 		.Read_data(Read_data),
 		.Instr(Instr),
@@ -20,7 +29,6 @@ module top(
 	);
 	
 //指令存储器
-	wire [31:0] Instr;
 	inst_ram Inst_RAM (
 		.clka(clk),    // input wire clka  
 		.ena(1'b1),      // input wire ena  使能
@@ -32,7 +40,6 @@ module top(
 	);
 	
 //数据存储器
-	wire [31:0] Read_data;
 	data_ram Data_RAM (
 		.clka(clk),    // input wire clka
 		.ena(mem_en),      // input wire ena  使能

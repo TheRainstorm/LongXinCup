@@ -53,17 +53,25 @@ module datapath(
     assign instr = Instr;
     assign ALU_out = alu_result;
     assign Write_data = rd2;
-    assign PC = pc;
+    assign PC = {2'b00,pc_next[31:2]};				//debug 将pc_next输出
+
+    //把一些提前定义，防止出现使用出现在定义之前
+    wire [31:0] rd1,rd2;
+    
 //PC
 	wire [31:0] pc; //读指令寄存器地址
-	pc #(32) PC(
+	wire [31:0] pc_next;    //下一个PC地址
+	pc #(32) PC_(
 		.clk(clk),.rst(rst),
 		.pc_next(pc_next),
 
 		.pc(pc)
     );
 
-	wire [31:0] pc_next;    //下一个PC地址
+	//符号扩展
+	wire [31:0] sign_imm;
+	sign_extend Sign_extend(instr[15:0],sign_imm);
+
     wire [31:0] pc_plus4;   //正常情况下，下一条指令地址为pc加4
 	adder #(32) Adder_1(.carryin(1'b0),.x(pc),.y(32'd4),.s(pc_plus4));
 
@@ -79,16 +87,32 @@ module datapath(
 	sl2 #(32) SL2(sign_imm,sign_imm_sl2);
 		//加pc_plus4
 	adder #(32) Adder_2(.carryin(1'b0),.x(pc_plus4),.y(sign_imm_sl2),.s(pc_branch));
-	mux2 #(32) MUX2_4(.d0(pc_plus4),.d1(pc_branch),.s(pc_src),.y(pc_temp));
+	mux2 #(32) MUX_PC_1(.d0(pc_plus4),.d1(pc_branch),.s(pc_src),.y(pc_temp));
 	//第二个二选一:
 	wire [31:0] pc_jump;    //跳转指令产生的地址（先将26位立即数左移2位，然后最高4位补pc的最高4位）
 	wire [31:0] instr26_sl2;
 	sl2 #(32) SL2_2({6'b0,instr[25:0]},instr26_sl2);
 	assign pc_jump = {pc[31:28],instr26_sl2[27:0]};
-	mux2 #(32) MUX2_5(.d0(pc_temp),.d1(pc_jump),.s(jump),.y(pc_next));
+	mux2 #(32) MUX_PC_2(.d0(pc_temp),.d1(pc_jump),.s(jump),.y(pc_next));
+
+//ALU
+	wire [31:0] alu_result;
+	wire [31:0] alu_src_b;
+	alu ALU(
+		.a(rd1),.b(alu_src_b),
+		.op(alu_control),
+
+		.y(alu_result),
+		.overflow(),
+		.zero(zero)
+    );
+
+	//ALU输入选择
+	mux2 #(32) MUX_ALU(.d0(rd2),.d1(sign_imm),.s(alu_src),.y(alu_src_b));
 
 //寄存器堆
-	wire [31:0] rd1,rd2;
+	wire [4:0] write_reg;
+	wire [31:0] reg_write_data;    //写入寄存器堆的数据
 	regfile Regfile(
 		.clk(clk),
 		.we3(reg_write_en), //寄存器堆写使能
@@ -99,30 +123,9 @@ module datapath(
     );
 
 	//写入寄存器选择
-	wire [4:0] write_reg;
-	mux2 #(5) MUX2_1(.d0(instr[20:16]),.d1(instr[15:11]),.s(reg_dst),.y(write_reg));
+	mux2 #(5) MUX_WRA(.d0(instr[20:16]),.d1(instr[15:11]),.s(reg_dst),.y(write_reg));
 
 	//写数据选择
-	wire [31:0] reg_write_data;    //写入寄存器堆的数据
-	mux2 #(32) MUX2_3(.d0(alu_result),.d1(read_data),.s(mem_to_reg),.y(reg_write_data));
-
-//ALU
-	wire [31:0] alu_result;
-	alu ALU(
-		.a(rd1),.b(alu_src_b),
-		.op(alu_control),
-
-		.y(alu_result),
-		.overflow(),
-		.zero(zero)
-    );
-    
-	//符号扩展
-	wire [31:0] sign_imm;
-	sign_extend Sign_extend(instr[15:0],sign_imm);
-
-	//ALU输入选择
-	wire [31:0] alu_src_b;
-	mux2 #(32) MUX2_2(.d0(rd2),.d1(sign_imm),.s(alu_src),.y(alu_src_b));
+	mux2 #(32) MUX_WRD(.d0(alu_result),.d1(read_data),.s(mem_to_reg),.y(reg_write_data));
 
 endmodule

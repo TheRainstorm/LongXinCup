@@ -29,10 +29,10 @@ module testbench();
 
 	top dut(clk,rst,writedata,dataadr,memwrite);
 
-	initial begin 
-		rst <= 1;
-		#200;
-		rst <= 0;
+	initial begin
+		rst = 0;
+		#2 rst = 1;
+		#2 rst <= 0;
 	end
 
 	always begin

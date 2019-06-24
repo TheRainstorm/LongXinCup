@@ -11,6 +11,9 @@ module mips(
     output mem_write_en
 	);
 
+    wire [0:7] main_control;
+    wire [2:0] alu_control;
+    
 	datapath Datapath(
 		.clk(clk),.rst(rst),
 		.main_control(main_control),
@@ -26,8 +29,6 @@ module mips(
         .mem_write_en(mem_write_en)
     );
 
-	wire [0:7] main_control;
-	wire [2:0] alu_control;
     controller Control(
 		.op(Instr[31:26]),
 		.funct(Instr[5:0]),
