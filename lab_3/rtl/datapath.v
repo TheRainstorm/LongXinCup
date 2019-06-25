@@ -53,7 +53,7 @@ module datapath(
     assign instr = Instr;
     assign ALU_out = alu_result;
     assign Write_data = rd2;
-    assign PC = {2'b00,pc_next[31:2]};				//debug 将pc_next输出
+    assign PC = {2'b00,pc_next[31:2]};				//debug 将pc_next输出，使得pc和instr同步
 
     //把一些提前定义，防止出现使用出现在定义之前
     wire [31:0] rd1,rd2;
@@ -114,7 +114,7 @@ module datapath(
 	wire [4:0] write_reg;
 	wire [31:0] reg_write_data;    //写入寄存器堆的数据
 	regfile Regfile(
-		.clk(clk),
+		.clk(~clk),																						//时钟取反
 		.we3(reg_write_en), //寄存器堆写使能
 		.ra1(instr[25:21]),.ra2(instr[20:16]),.wa3(write_reg),  //读写的地址
 		.wd3(reg_write_data),   //写数据
