@@ -53,7 +53,7 @@ module datapath(
     assign instr = Instr;
     assign ALU_out = alu_result;
     assign Write_data = rd2;
-    assign PC = {2'b00,pc_next[31:2]};				//debug 将pc_next输出，使得pc和instr同步
+    assign PC = {2'b00,pc_next[31:2]};				//1 将pc_next输出，使得pc和instr同步 2 pc_next除以了4（右移两位），这是为了取指正确
 
     //把一些提前定义，防止出现使用出现在定义之前
     wire [31:0] rd1,rd2;

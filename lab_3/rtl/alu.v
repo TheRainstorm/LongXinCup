@@ -6,6 +6,17 @@ module alu(
 	output wire zero
     );
 
+	//op	作用
+	
+	//010	a + b
+	//110	a - b
+	//000	a & b
+	//001	a | b
+	//100	a & ~b
+	//101	a | ~b
+	//111	a < b (严格小于）
+	//011	未定义
+
 	wire[31:0] s,bout;
 	assign bout = op[2] ? ~b : b;
 	assign s = a + bout + op[2];
@@ -14,7 +25,7 @@ module alu(
 			2'b00: y <= a & bout;
 			2'b01: y <= a | bout;
 			2'b10: y <= s;
-			2'b11: y <= s[31];
+			2'b11: y <= {31'b0,s[31]};
 			default : y <= 32'b0;
 		endcase	
 	end
