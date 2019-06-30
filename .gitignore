@@ -84,3 +84,6 @@
 !*.elf
 !*.bmm
 !*.xmp
+
+#asm file
+!*.asm
