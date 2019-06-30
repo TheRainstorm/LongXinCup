@@ -53,7 +53,7 @@ module testbench();
 			end else if(dataadr !== 80) begin
 				/* code */
 				$display("Simulation Failed");
-				$stop;
+				//$stop;
 			end
 		end
 	end
