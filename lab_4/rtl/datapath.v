@@ -23,6 +23,7 @@ module datapath(
 	input clk,rst,
 	input [0:7] main_control,
 	input [2:0] alu_control,
+	input [1:0] forwardAE,forwardBE;
 
 	input [31:0] Read_data,     //read_data
 	input [31:0] Instr,         //instr
@@ -32,6 +33,7 @@ module datapath(
     output [31:0] PC,           //pcF
     output mem_enD,
     output mem_write_enD
+	output 
     );
 //变量定义
 	// 控制信号
@@ -58,6 +60,7 @@ module datapath(
 	wire [31:0] alu_outE, alu_outM, alu_outW;
 	wire [31:0] read_dataW;
 	wire [31:0] reg_write_dataW;	//写入寄存器堆的数据
+	wire [31:0] alu_src_bE_temp;
 
 	//main_control信号分解
 	assign reg_write_enD = 	main_control[0];
@@ -134,8 +137,9 @@ module datapath(
 	floprc #(1) floprc_DE_15(clk,rst, ,mem_enD,mem_enE);
 	//
 	//alu input
-	assign alu_src_aE = rd1E;
-	mux2 #(32) MUX_ALU(.d0(rd2E),.d1(sign_immE),.s(alu_srcE),.y(alu_src_bE));
+	mux3 #(32) mux3_srcA(rd1E,reg_write_dataW,alu_outM,forwardAE,alu_src_aE);
+	mux3 #(32) mux3_srcB(rd2E,reg_write_dataW,alu_outM,forwardAE,alu_src_bE_temp);
+	mux2 #(32) MUX_ALU(alu_src_bE_temp, sign_immE, alu_srcE, alu_src_bE);
 	//alu
 	assign alu_controlE = alu_controlD;
 	alu ALU(
