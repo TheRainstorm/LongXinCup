@@ -8,16 +8,22 @@ module mips(
     output [31:0] Write_data,
     output [31:0] PC,
     output mem_en,
-    output mem_write_en
+    output mem_write_en,
+	output stallD,
+
 	);
 
     wire [0:7] main_control;
     wire [2:0] alu_control;
     
+	wire hazard_control;
+    wire hazard_data;
+
 	datapath Datapath(
 		.clk(clk),.rst(rst),
 		.main_control(main_control),
 		.alu_control(alu_control),
+        .hazard_control(hazard_control),
 
         .Read_data(Read_data),
         .Instr(Instr),
@@ -26,7 +32,10 @@ module mips(
         .Write_data(Write_data),
         .PC(PC),
         .mem_en(mem_en),
-        .mem_write_en(mem_write_en)
+        .mem_write_en(mem_write_en),
+	    .stallD(stallD) ,
+
+        .hazard_data(hazard_data)
     );
 
     controller Control(
@@ -36,4 +45,11 @@ module mips(
 		.main_control(main_control),
 		.alu_control(alu_control)
     );
+
+    hazard Hazard(
+        .hazard_data(hazard_data),
+
+        .hazard_control(hazard_control)
+    );
+
 endmodule

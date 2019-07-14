@@ -23,7 +23,8 @@ module datapath(
 	input clk,rst,
 	input [0:7] main_control,
 	input [2:0] alu_control,
-	input [1:0] forwardAE,forwardBE;
+	input hazard_control,
+	output hazard_data,
 
 	input [31:0] Read_data,     //read_data
 	input [31:0] Instr,         //instr
@@ -32,8 +33,9 @@ module datapath(
     output [31:0] Write_data,   //rd2
     output [31:0] PC,           //pcF
     output mem_enD,
-    output mem_write_enD
-	output 
+    output mem_write_enD,
+	output stallD,
+
     );
 //变量定义
 	// 控制信号
@@ -43,6 +45,9 @@ module datapath(
 	wire reg_write_enW, mem_to_regW,											 jumpD, mem_enD;
 	wire alu_controlD, alu_controlE;
 	wire zeroE, zeroM, pc_srcM;
+	//hazard
+	wire [1:0] forwardAE,forwardBE;
+    wire lwstall, stallF, stallD, flushE;
 
 	wire [31:0] pc; //读指令寄存器地址
 	wire [31:0] pc_next;    //下一个PC地址
@@ -71,16 +76,26 @@ module datapath(
 	assign mem_to_regD = 	main_control[5];
 	assign jumpD = 			main_control[6];
 	assign mem_enD = 		main_control[7];
-
+	//hazard_control信号分解
+	assign forwardAE = hazard_control[0:1];
+	assign forwardBE = hazard_control[2:3];
+	assign lwstall = hazard_control[4];
+	assign stallF = hazard_control[5];
+	assign stallD = hazard_control[6];
+	assign flushE = hazard_control[7];
+	
     //MIPS核 和内存接口
     assign ALU_out = alu_outM;
     assign Write_data = write_dataM;
     assign PC = {2'b00,pcF};
 
+	//生成hazard_data
+	hazard_data = {};
+
 //Fetch stage
 	assign pcF = pc;
 	flopenr #(32) _PC(
-		.clk(clk),.en(),.rst(rst),
+		.clk(clk),.en(~stallF),.rst(rst),
 		.d(pc_next),
 
 		.q(pc)
@@ -119,22 +134,22 @@ module datapath(
 
 //Execute stage
 	//input
-	floprc #(32) floprc_DE_1(clk,rst, ,rd1D,rd1E);
-	floprc #(32) floprc_DE_2(clk,rst, ,rd2D,rd2E);
-	floprc #(5)  floprc_DE_3(clk,rst, ,rsD,rsE);
-	floprc #(5)  floprc_DE_4(clk,rst, ,rtD,rtE);
-	floprc #(5)  floprc_DE_5(clk,rst, ,rdD,rdE);
-	floprc #(32) floprc_DE_6(clk,rst, ,sign_immD,sign_immE);
-	floprc #(32) floprc_DE_7(clk,rst, ,pc_plus4D,pc_plus4E);
+	floprc #(32) floprc_DE_1(clk,rst, flushE,rd1D,rd1E);
+	floprc #(32) floprc_DE_2(clk,rst, flushE,rd2D,rd2E);
+	floprc #(5)  floprc_DE_3(clk,rst, flushE,rsD,rsE);
+	floprc #(5)  floprc_DE_4(clk,rst, flushE,rtD,rtE);
+	floprc #(5)  floprc_DE_5(clk,rst, flushE,rdD,rdE);
+	floprc #(32) floprc_DE_6(clk,rst, flushE,sign_immD,sign_immE);
+	floprc #(32) floprc_DE_7(clk,rst, flushE,pc_plus4D,pc_plus4E);
 
-	floprc #(1)  floprc_DE_8(clk,rst, ,reg_write_enD,reg_write_enE);
-	floprc #(1)  floprc_DE_9(clk,rst, ,reg_dstD,reg_dstE);
-	floprc #(1) floprc_DE_10(clk,rst, ,alu_srcD,alu_srcE);
-	floprc #(1) floprc_DE_11(clk,rst, ,branchD,branchE);
-	floprc #(1) floprc_DE_12(clk,rst, ,mem_write_enD,mem_write_enE);
-	floprc #(1) floprc_DE_13(clk,rst, ,mem_to_regD,mem_to_regE);
-	floprc #(1) floprc_DE_14(clk,rst, ,jumpD,jumpE);
-	floprc #(1) floprc_DE_15(clk,rst, ,mem_enD,mem_enE);
+	floprc #(1)  floprc_DE_8(clk,rst, flushE,reg_write_enD,reg_write_enE);
+	floprc #(1)  floprc_DE_9(clk,rst, flushE,reg_dstD,reg_dstE);
+	floprc #(1) floprc_DE_10(clk,rst, flushE,alu_srcD,alu_srcE);
+	floprc #(1) floprc_DE_11(clk,rst, flushE,branchD,branchE);
+	floprc #(1) floprc_DE_12(clk,rst, flushE,mem_write_enD,mem_write_enE);
+	floprc #(1) floprc_DE_13(clk,rst, flushE,mem_to_regD,mem_to_regE);
+	floprc #(1) floprc_DE_14(clk,rst, flushE,jumpD,jumpE);
+	floprc #(1) floprc_DE_15(clk,rst, flushE,mem_enD,mem_enE);
 	//
 	//alu input
 	mux3 #(32) mux3_srcA(rd1E,reg_write_dataW,alu_outM,forwardAE,alu_src_aE);
