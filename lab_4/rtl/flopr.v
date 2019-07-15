@@ -1,5 +1,5 @@
-module flopenrc #(parameter WIDTH=8)(
-    input clk,en,rst,clr,
+module flopr #(parameter WIDTH=8)(
+    input clk,rst,
     input [WIDTH-1:0] d,
     output reg [ WIDTH-1:0] q
 );
@@ -7,10 +7,7 @@ module flopenrc #(parameter WIDTH=8)(
         if(rst) begin
             q <= 0;
         end
-        else if(clr) begin
-            q <= 0;
-        end
-        else if(en) begin
+        else begin
             q <= d;
         end
     end

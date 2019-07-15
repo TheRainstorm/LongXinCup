@@ -21,7 +21,7 @@
 
 module datapath(
 	input clk,rst,
-	input [0:7] main_control,
+	input [0:10] main_control,
 	input [2:0] alu_control,
 	input [0:8] hazard_control,
 	output [0:40] hazard_data,
@@ -33,18 +33,20 @@ module datapath(
     output [31:0] Write_data,   //rd2
     output [31:0] PC,           //pcF
     output mem_en,
-    output mem_write_en,
+    output [3:0] mem_write_en,
 	output stallD
 
     );
 //变量定义
 	// 控制信号
-	wire reg_write_enD, mem_to_regD, mem_write_enD, branchD, alu_srcD, reg_dstD, jumpD, mem_enD;
-	wire reg_write_enE, mem_to_regE, mem_write_enE, 		 alu_srcE, reg_dstE, jumpE, mem_enE;
-	wire reg_write_enM, mem_to_regM, mem_write_enM,								 jumpM, mem_enM;
+	wire reg_write_enD, mem_to_regD, branchD, alu_srcD, reg_dstD, jumpD, mem_enD;
+	wire reg_write_enE, mem_to_regE, 		 alu_srcE, reg_dstE, jumpE, mem_enE;
+	wire reg_write_enM, mem_to_regM,								 jumpM, mem_enM;
 	wire reg_write_enW, mem_to_regW,											 jumpW, mem_enW;
-	wire alu_controlD, alu_controlE;
+	wire [2:0] alu_controlD, alu_controlE;
 	wire pc_srcD;
+	wire [3:0] mem_write_enD, mem_write_enE, mem_write_enM;
+
 	//hazard
 	wire [1:0] forwardAE,forwardBE;
     wire stallF, stallD, flushE;
@@ -53,7 +55,7 @@ module datapath(
 	wire [31:0] pc; //读指令寄存器地址
 	wire [31:0] pc_next;    //下一个PC地址
 	wire [31:0] pc_temp;    //pc第一个二选一结果
-	wire [31:0] pc_jump;    //跳转指令产生的地址（先将26位立即数左移2位，然后最高4位补pc的最高4位）
+	wire [31:0] pc_jumpD;    //跳转指令产生的地址（先将26位立即数左移2位，然后最高4位补pc的最高4位）
 	wire [31:0] instr26_sl2;
 	wire [31:0] sign_imm_sl2;
 	wire [31:0] pcF,instrD,instrF;
@@ -75,10 +77,10 @@ module datapath(
 	assign reg_dstD = 		main_control[1];
 	assign alu_srcD = 		main_control[2];
 	assign branchD = 		main_control[3];
-	assign mem_write_enD = 	main_control[4];
-	assign mem_to_regD = 	main_control[5];
-	assign jumpD = 			main_control[6];
-	assign mem_enD = 		main_control[7];
+	assign mem_write_enD = 	main_control[4:7];
+	assign mem_to_regD = 	main_control[8];
+	assign jumpD = 			main_control[9];
+	assign mem_enD = 		main_control[10];
 	//hazard_control信号分解
 	assign forwardAE = hazard_control[0:1];
 	assign forwardBE = hazard_control[2:3];
@@ -95,9 +97,9 @@ module datapath(
     //MIPS核 和内存接口
     assign ALU_out = alu_outM;
     assign Write_data = write_dataM;
-    assign PC = {2'b00,pcF};
-	assign mem_en = mem_enD;
-	assign mem_write_en = mem_write_enD;
+    assign PC = {2'b00,pcF[31:2]};
+	assign mem_en = mem_enM;
+	assign mem_write_en = mem_write_enM;
 
 //Fetch stage
 	assign pcF = pc;
@@ -111,17 +113,14 @@ module datapath(
 	adder #(32) Adder_1(.carryin(1'b0),.x(pc),.y(32'd4),.s(pc_plus4F));
 	//PC选择
 		//第一个二选一:
-	mux2 #(32) MUX_PC_1(.d0(pc_plus4F),.d1(pc_branchD),.s(pc_srcD),.y(pc_next));
+	mux2 #(32) MUX_PC_1(.d0(pc_plus4F),.d1(pc_branchD),.s(pc_srcD),.y(pc_temp));
 	 	//第二个二选一:
-	// sl2 #(32) SL2_2({6'b0,instr[25:0]},instr26_sl2);
-	// assign pc_jump = {pc[31:28],instr26_sl2[27:0]};
-	// mux2 #(32) MUX_PC_2(.d0(pc_temp),.d1(pc_jump),.s(jump),.y(pc_next));
-
+	mux2 #(32) MUX_PC_2(.d0(pc_temp),.d1(pc_jumpD),.s(jumpD),.y(pc_next));
 //Decode stage
 	//input
 	assign instrD=Instr;	//指令存储器本来就会延迟一个周期
 	assign alu_controlD = alu_control;
-	flopenr #(32) flopenr_FD_1(clk,1'b1,rst,pc_plus4F,pc_plus4D);
+	flopenr #(32) flopenr_FD_1(clk,~stallD,rst,pc_plus4F,pc_plus4D);
 	//
 	regfile Regfile(
 		.clk(~clk),	//时钟取反
@@ -150,6 +149,8 @@ module datapath(
 
 	assign pc_srcD = branchD && equalD;
 
+	//jump 
+	assign pc_jumpD = {pc_plus4D[31:28],instrD[25:0],2'b00};
 //Execute stage
 	//input
 	floprc #(32) floprc_DE_1(clk,rst, flushE,rd1D,rd1E);
@@ -162,17 +163,17 @@ module datapath(
 	floprc #(1)  floprc_DE_8(clk,rst, flushE,reg_write_enD,reg_write_enE);
 	floprc #(1)  floprc_DE_9(clk,rst, flushE,reg_dstD,reg_dstE);
 	floprc #(1) floprc_DE_10(clk,rst, flushE,alu_srcD,alu_srcE);
-	floprc #(1) floprc_DE_12(clk,rst, flushE,mem_write_enD,mem_write_enE);
+	floprc #(4) floprc_DE_12(clk,rst, flushE,mem_write_enD,mem_write_enE);
 	floprc #(1) floprc_DE_13(clk,rst, flushE,mem_to_regD,mem_to_regE);
-	floprc #(1) floprc_DE_14(clk,rst, flushE,jumpD,jumpE);
 	floprc #(1) floprc_DE_15(clk,rst, flushE,mem_enD,mem_enE);
+	//alu control
+	floprc #(3) floprc_DE_16(clk,rst, flushE,alu_controlD,alu_controlE);
 	//
 	//alu input
 	mux3 #(32) mux3_srcA(rd1E,reg_write_dataW,alu_outM,forwardAE,alu_src_aE);
-	mux3 #(32) mux3_srcB(rd2E,reg_write_dataW,alu_outM,forwardAE,alu_src_bE_temp);
+	mux3 #(32) mux3_srcB(rd2E,reg_write_dataW,alu_outM,forwardBE,alu_src_bE_temp);
 	mux2 #(32) MUX_ALU(alu_src_bE_temp, sign_immE, alu_srcE, alu_src_bE);
 	//alu
-	assign alu_controlE = alu_controlD;
 	alu ALU(
 		.a(alu_src_aE),.b(alu_src_bE),
 		.op(alu_controlE),
@@ -182,7 +183,7 @@ module datapath(
 		.zero() //zeroE
     );
 
-	assign write_dataE = rd2E;
+	assign write_dataE = alu_src_bE_temp;
 
 	//写入寄存器选择
 	mux2 #(5) MUX_WRA(.d0(rtE),.d1(rdE),.s(reg_dstE),.y(write_regE));
@@ -190,21 +191,24 @@ module datapath(
 
 //Memory stage
 	//input
-	floprc #(1)  flopr_EM_1(clk,rst,reg_write_enE,reg_write_enM);
-	floprc #(1)  flopr_EM_2(clk,rst,mem_to_regE,mem_to_regM);
-	floprc #(1) flopr_EM_3(clk,rst,mem_write_enE,mem_write_enM);
-	floprc #(32) flopr_EM_6(clk,rst,alu_outE,alu_outM);
-	floprc #(32) flopr_EM_7(clk,rst,write_dataE,write_dataM);
-	floprc #(5) flopr_EM_8(clk,rst,write_regE,write_regM);
+	flopr #(1)  flopr_EM_1(clk,rst,reg_write_enE,reg_write_enM);
+	flopr #(1)  flopr_EM_2(clk,rst,mem_to_regE,mem_to_regM);
+	flopr #(4) flopr_EM_3(clk,rst,mem_write_enE,mem_write_enM);
+	flopr #(32) flopr_EM_6(clk,rst,alu_outE,alu_outM);
+	flopr #(32) flopr_EM_7(clk,rst,write_dataE,write_dataM);
+	flopr #(5) flopr_EM_8(clk,rst,write_regE,write_regM);
+	flopr #(5) flopr_EM_9(clk,rst,mem_enE,mem_enM);
 	//
 
 //Write back stage
 	//input
-	floprc #(1) flopr_EM_9(clk,rst,reg_write_enM,reg_write_enW);
-	floprc #(1) flopr_EM_10(clk,rst,mem_to_regM,mem_to_regW);
-	floprc #(32) flopr_EM_11(clk,rst,alu_outM,alu_outW);
-	assign read_dataW = Read_data;
-	floprc #(5) flopr_EM_12(clk,rst,write_regM,write_regW);
+	flopr #(1) flopr_MW_1(clk,rst,reg_write_enM,reg_write_enW);
+	flopr #(1) flopr_MW_2(clk,rst,mem_to_regM,mem_to_regW);
+	flopr #(32)flopr_MW_3(clk,rst,alu_outM,alu_outW);
+
+	flopr #(32)flopr_MW_4(clk,rst,Read_data,read_dataW);//重点
+
+	flopr #(5) flopr_MW_5(clk,rst,write_regM,write_regW);
 	//
 
 	//写数据选择

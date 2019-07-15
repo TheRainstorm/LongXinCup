@@ -3,7 +3,7 @@ module hazard(
     output [0:8] hazard_control
 );
     //input
-    wire [3:0] rsD,rtD,rsE,rtE,write_regE, write_regM,write_regW;
+    wire [4:0] rsD,rtD,rsE,rtE,write_regE, write_regM,write_regW;
     wire reg_write_enE,reg_write_enM,reg_write_enW;
     wire mem_to_regE,mem_to_regM;
     wire branchD;
@@ -31,10 +31,10 @@ module hazard(
         end
     end
     always @(*) begin
-        if( (rtE!=0) && (rsE==write_regM) && reg_write_enM) begin
+        if( (rtE!=0) && (rtE==write_regM) && reg_write_enM) begin
             forwardBE <= 2'b10;
         end
-        else if( (rtE!=0) && (rsE==write_regW) && reg_write_enW) begin
+        else if( (rtE!=0) && (rtE==write_regW) && reg_write_enW) begin
             forwardBE <= 2'b01;
         end
         else begin

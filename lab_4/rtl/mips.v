@@ -8,12 +8,12 @@ module mips(
     output [31:0] Write_data,
     output [31:0] PC,
     output mem_en,
-    output mem_write_en,
+    output [3:0] mem_write_en,
 	output stallD
 
 	);
 
-    wire [0:7] main_control;
+    wire [0:10] main_control;
     wire [2:0] alu_control;
     
 	wire [0:8] hazard_control;

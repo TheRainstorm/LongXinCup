@@ -3,7 +3,7 @@ module top(
 
 	output [31:0] Write_data,
 	output [31:0] ALU_out,
-	output mem_write_en
+	output [3:0] mem_write_en
 	);
 	
     wire [31:0] PC;
@@ -29,24 +29,24 @@ module top(
 	
 //指令存储器
 	inst_ram Inst_RAM (
-		.clka(clk),    // input wire clka  														//时钟取反
-		.ena(~stallD),      // input wire ena  使能
-		.wea(4'b0),      // input wire [3 : 0] wea  写使能
-		.addra(PC),  // input wire [4 : 0] addra   读地址
-		.dina(32'b0),    // input wire [31 : 0] dina    写数据
+		.clka(clk),    //时钟取反
+		.ena(~stallD),      // 使能
+		.wea(4'b0),      // 写使能
+		.addra(PC),  // 读地址
+		.dina(32'b0),    //  写数据
 
-		.douta(Instr)  // output wire [31 : 0] douta    读数据
+		.douta(Instr)  // 读数据
 	);
 	
 //数据存储器
 	data_ram Data_RAM (
-		.clka(~clk),    // input wire clka
-		.ena(mem_en),      // input wire ena  使能
-		.wea({4{mem_write_en}}),      // input wire [3 : 0] wea   写使能
-		.addra(ALU_out),  // input wire [9 : 0] addra  读地址
-		.dina(Write_data),    // input wire [31 : 0] dina    写数据
+		.clka(~clk),   
+		.ena(mem_en),      // 使能
+		.wea(mem_write_en),      //写使能
+		.addra(ALU_out),  // 读地址
+		.dina(Write_data),    // 写数据
 
-		.douta(Read_data)  // output wire [31 : 0] douta  读数据
+		.douta(Read_data)  // 读数据
 	);
 
 endmodule
