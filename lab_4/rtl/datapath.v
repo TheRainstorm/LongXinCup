@@ -24,7 +24,7 @@ module datapath(
 	input [0:7] main_control,
 	input [2:0] alu_control,
 	input [0:8] hazard_control,
-	output [0:39] hazard_data,
+	output [0:40] hazard_data,
 
 	input [31:0] Read_data,     //read_data
 	input [31:0] Instr,         //instr
@@ -32,9 +32,9 @@ module datapath(
     output [31:0] ALU_out,      //alu_result
     output [31:0] Write_data,   //rd2
     output [31:0] PC,           //pcF
-    output mem_enD,
-    output mem_write_enD,
-	output stallD,
+    output mem_en,
+    output mem_write_en,
+	output stallD
 
     );
 //变量定义
@@ -91,11 +91,13 @@ module datapath(
 	assign hazard_data[0:34] = {rsD,rtD,rsE,rtE,write_regE, write_regM,write_regW};
     assign hazard_data[35:37] = {reg_write_enE,reg_write_enM,reg_write_enW};
     assign hazard_data[38:39] = {mem_to_regE,mem_to_regM};
+	assign hazard_data[40] = branchD;
     //MIPS核 和内存接口
     assign ALU_out = alu_outM;
     assign Write_data = write_dataM;
     assign PC = {2'b00,pcF};
-
+	assign mem_en = mem_enD;
+	assign mem_write_en = mem_write_enD;
 
 //Fetch stage
 	assign pcF = pc;
@@ -198,11 +200,11 @@ module datapath(
 
 //Write back stage
 	//input
-	floprc #(1) flopr_EM_1(clk,rst,reg_write_enM,reg_write_enW);
-	floprc #(1) flopr_EM_1(clk,rst,mem_to_regM,mem_to_regW);
-	floprc #(32) flopr_EM_1(clk,rst,alu_outM,alu_outW);
+	floprc #(1) flopr_EM_9(clk,rst,reg_write_enM,reg_write_enW);
+	floprc #(1) flopr_EM_10(clk,rst,mem_to_regM,mem_to_regW);
+	floprc #(32) flopr_EM_11(clk,rst,alu_outM,alu_outW);
 	assign read_dataW = Read_data;
-	floprc #(5) flopr_EM_1(clk,rst,write_regM,write_regW);
+	floprc #(5) flopr_EM_12(clk,rst,write_regM,write_regW);
 	//
 
 	//写数据选择

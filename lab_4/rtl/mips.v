@@ -9,15 +9,15 @@ module mips(
     output [31:0] PC,
     output mem_en,
     output mem_write_en,
-	output stallD,
+	output stallD
 
 	);
 
     wire [0:7] main_control;
     wire [2:0] alu_control;
     
-	wire hazard_control;
-    wire hazard_data;
+	wire [0:8] hazard_control;
+    wire [0:40] hazard_data;
 
 	datapath Datapath(
 		.clk(clk),.rst(rst),
