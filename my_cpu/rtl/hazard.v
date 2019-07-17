@@ -2,21 +2,30 @@ module hazard(
     input [0:40] hazard_data,
     output [0:8] hazard_control
 );
+//1 数据定义
     //input
     wire [4:0] rsD,rtD,rsE,rtE,write_regE, write_regM,write_regW;
     wire reg_write_enE,reg_write_enM,reg_write_enW;
     wire mem_to_regE,mem_to_regM;
     wire branchD;
+    wire hilo_write_enM, hilo_readE;
     //temp
     wire lwstall,branchstall;
     //output
     reg [1:0] forwardAE, forwardBE;
-    wire stallF, stallD, flushE, forwardAD, forwardBD;
+    wire stallF, stallD, flushE, forwardAD, forwardBD, forward_hilo;
 //INPUT
     assign {rsD,rtD,rsE,rtE,write_regE, write_regM,write_regW} =hazard_data[0:34];
     assign {reg_write_enE,reg_write_enM,reg_write_enW} = hazard_data[35:37];
     assign {mem_to_regE,mem_to_regM} = hazard_data[38:39];
     assign branchD = hazard_data[40];
+    assign {hilo_readE, hilo_write_enM} = hazard_data[41:42];
+//OUTPUT
+    //                       0:1         2:3         4       5       6       7           8        9
+    assign hazard_control = {forwardAE, forwardBE, stallF, stallD, flushE, forwardAD, forwardBD, forward_hilo};
+
+
+//2 具体实现
 //data hazard
     //forward
     always @(*) begin
@@ -41,7 +50,12 @@ module hazard(
             forwardBE <= 2'b00;
         end
     end
-
+    //hilo forward
+    always @(*) begin
+        if(hilo_readE && hilo_write_enM) begin
+            forward_hilo <= 1'b1;
+        end
+    end
     //lw stall
     assign lwstall = mem_to_regE && ( (rsD==rtE) || (rtD==rtE) );
 
@@ -58,7 +72,5 @@ module hazard(
     assign flushE = lwstall || branchstall;
     assign stallF = lwstall || branchstall;
     assign stallD = lwstall || branchstall;
-//OUTPUT
-    //                       0:1         2:3         4       5       6       7           8
-    assign hazard_control = {forwardAE, forwardBE, stallF, stallD, flushE, forwardAD, forwardBD};
+
 endmodule

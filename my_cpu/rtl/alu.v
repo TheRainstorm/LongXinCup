@@ -1,43 +1,74 @@
+`include "aludefine.vh"
+
 module alu(
-	input wire[31:0] a,b,
-	input wire[2:0] op,
-	output reg[31:0] y,
-	output reg overflow,
-	output wire zero
+	input [31:0] a,b,
+	input [63:0] hilo,
+	input [4:0] alu_control,
+    input [4:0] sa,
+
+	output [63:0] y,
+	output overflow,
+	output zero,
+
+	output reg div_stall	//
     );
 
-	//op	作用
+	wire [63:0] y_simple, div_result;
+	assign y = (alu_control == `SIGNED_DIV || alu_control == `UNSIGNED_DIV) ?
+				div_result : y_simple;
 	
-	//010	a + b
-	//110	a - b
-	//000	a & b
-	//001	a | b
-	//100	a & ~b
-	//101	a | ~b
-	//111	a < b (严格小于）
-	//011	未定义
+	alu_helper alu_helper(
+		.a(a),.b(b),
+    	.hilo(hilo),
+		.sa(sa),
+		.alu_control(alu_control),
 
-	wire[31:0] s,bout;
-	assign bout = op[2] ? ~b : b;
-	assign s = a + bout + op[2];
-	always @(*) begin
-		case (op[1:0])
-			2'b00: y <= a & bout;
-			2'b01: y <= a | bout;
-			2'b10: y <= s;
-			2'b11: y <= {31'b0,s[31]};
-			default : y <= 32'b0;
-		endcase	
-	end
-	assign zero = (y == 32'b0);
+		.y(y_simple),
+		.overflow(overflow),
+		.zero(zero)
+	);
 
-	always @(*) begin
-		case (op[2:1])
-			2'b01:overflow <= a[31] & b[31] & ~s[31] |
-							~a[31] & ~b[31] & s[31];
-			2'b11:overflow <= ~a[31] & b[31] & s[31] |
-							a[31] & ~b[31] & ~s[31];
-			default : overflow <= 1'b0;
-		endcase	
-	end
+
+	//divide
+	reg start_div, signed_div;
+	wire div_ready;
+
+	always @(*)
+		if (rst) begin
+		div_stall = 0;
+		start_div = 0;
+		signed_div = 0;
+		end else if (op == `SIGNED_DIV || op == `UNSIGNED_DIV)
+		if (div_ready == 1'b0) begin
+			start_div = 1'b1;
+			signed_div = (op == `SIGNED_DIV);
+			div_stall = 1'b1;
+		end else if (div_ready == 1'b1) begin
+			start_div = 1'b0;
+			signed_div = (op == `SIGNED_DIV);
+			div_stall = 1'b0;
+		end else begin
+			start_div = 1'b0; 
+			signed_div = (op == `SIGNED_DIV);
+			div_stall = 1'b0;
+		end
+		else begin
+		start_div = 1'b0; 
+		signed_div = 1'b0;
+		div_stall = 1'b0;
+		end
+
+	div divE(// Outputs
+			.result                     (div_result),
+			.ready                      (div_ready),
+			// Inputs
+			.clk                        (clk),
+			.rst                        (rst),
+			.signed_div                 (signed_div),
+			.a                          (num1),
+			.b                          (num2),
+			.start                      (start_div),
+			.annul                      (1'b0));
+	
 endmodule
+
