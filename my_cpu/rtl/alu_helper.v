@@ -18,9 +18,9 @@ module alu_helper(
             `ALU_NOR:       y <= ~(a | b);
             `ALU_XOR:       y <= a ^ b;
 
-            `ALU_ADD:       y <= {32{a[31]}, a[31:0]} + {32{b[31]}, b[31:0]};
+            `ALU_ADD:       y <= {{32{a[31]}}, a[31:0]} + {{32{b[31]}}, b[31:0]};
             `ALU_ADDU:      y <= a + b;
-            `ALU_SUB:       y <= {32{a[31]}, a[31:0]} - {32{b[31]}, b[31:0]};
+            `ALU_SUB:       y <= {{32{a[31]}}, a[31:0]} - {{32{b[31]}}, b[31:0]};
             `ALU_SUBU:      y <= a - b;
 
             `ALU_SLT:       y <= $signed(a) < $signed(b);
@@ -41,7 +41,7 @@ module alu_helper(
             `ALU_MTHI:      y <= {a[31:0], hilo[31:0]};
             `ALU_MTLO:      y <= {hilo[63:32], a[31:0]};
 
-            `ALU_PLUS8:     y <= a + 32'b4;
+            `ALU_PC_PLUS8:     y <= a + 32'd4;
             default:    y <= 64'd0;
         endcase
     end

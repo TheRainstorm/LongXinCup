@@ -1,4 +1,4 @@
-`include "aludefine.vh"
+`include "aludefines.vh"
 
 module alu(
 	input [31:0] a,b,
@@ -14,7 +14,7 @@ module alu(
     );
 
 	wire [63:0] y_simple, div_result;
-	assign y = (alu_control == `SIGNED_DIV || alu_control == `UNSIGNED_DIV) ?
+	assign y = (alu_control == `ALU_SIGNED_DIV || alu_control == `ALU_UNSIGNED_DIV) ?
 				div_result : y_simple;
 	
 	alu_helper alu_helper(
@@ -38,18 +38,18 @@ module alu(
 		div_stall = 0;
 		start_div = 0;
 		signed_div = 0;
-		end else if (op == `SIGNED_DIV || op == `UNSIGNED_DIV)
+		end else if (alu_control == `ALU_SIGNED_DIV || alu_control == `ALU_UNSIGNED_DIV)
 		if (div_ready == 1'b0) begin
 			start_div = 1'b1;
-			signed_div = (op == `SIGNED_DIV);
+			signed_div = (alu_control == `ALU_SIGNED_DIV);
 			div_stall = 1'b1;
 		end else if (div_ready == 1'b1) begin
 			start_div = 1'b0;
-			signed_div = (op == `SIGNED_DIV);
+			signed_div = (alu_control == `ALU_SIGNED_DIV);
 			div_stall = 1'b0;
 		end else begin
 			start_div = 1'b0; 
-			signed_div = (op == `SIGNED_DIV);
+			signed_div = (alu_control == `ALU_SIGNED_DIV);
 			div_stall = 1'b0;
 		end
 		else begin

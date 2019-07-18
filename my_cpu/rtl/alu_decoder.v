@@ -49,7 +49,7 @@ module alu_decoder(
 						`EXE_MTLO:  	alu_control <= `ALU_MTLO;
 						//jump
 						`EXE_JR:		alu_control <= `ALU_DONOTHING; //5
-						`EXE_JALR:		alu_control <= `ALU_PLUS8;
+						`EXE_JALR:		alu_control <= `ALU_PC_PLUS8;
 						default:    	alu_control <= `ALU_ADDU;
 					endcase
 			//I type
@@ -66,7 +66,7 @@ module alu_decoder(
 			`EXE_BRANCHS:
 				case(rt)
 					`EXE_BLTZAL,`EXE_BGEZAL:      
-                        alu_control <= `ALU_PLUS8;
+                        alu_control <= `ALU_PC_PLUS8;
                     `EXE_BLTZ, `EXE_BGEZ: 
                         alu_control <= `ALU_DONOTHING;
                     default:
@@ -75,7 +75,7 @@ module alu_decoder(
 			
 			//J type
 			`EXE_J:		alu_control <= `ALU_DONOTHING;
-			`EXE_JAL:	alu_control <= `ALU_PLUS8;
+			`EXE_JAL:	alu_control <= `ALU_PC_PLUS8;
 			default:
 						alu_control <= `ALU_DONOTHING;
 		endcase

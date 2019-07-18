@@ -25,7 +25,7 @@ module top(
         .Mem_addr(Mem_addr),
         .Write_data(Write_data),
         .Mem_en(Mem_en),
-        .Mem_write_en(Mem_write_en),
+        .Mem_write_en(Mem_write_en)
 	);
 	
 //指令存储器
