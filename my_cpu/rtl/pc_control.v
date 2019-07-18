@@ -35,10 +35,13 @@ module pc_control (
                 endcase
             `EXE_J, `EXE_JAL:
                 pc_src <=              `PC_JUMP;
-            `EXE_JUMPS:    //jr, jalr
-                pc_src <=              `PC_JUMPR;
+            `EXE_R_TYPE:    //jr, jalr
+                case(funct)
+                    `EXE_JR,`EXE_JALR: pc_src <= `PC_JUMPR;
+                    default: pc_src <= `PC_PLUS4;
+                endcase
             default:
                 pc_src <=              `PC_PLUS4;
-        endcase
+        endcase 
     end
 endmodule

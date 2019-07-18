@@ -25,7 +25,7 @@ module testbench();
 	reg rst;
 
 	wire[31:0] writedata,dataadr;
-	wire memwrite;
+	wire [3:0] memwrite;
 
 	top dut(clk,rst,writedata,dataadr,memwrite);
 
@@ -44,7 +44,7 @@ module testbench();
 	end
 
 	always @(negedge clk) begin
-		if(memwrite) begin
+		if(|memwrite) begin
 			/* code */
 			if(dataadr === 84 & writedata === 7) begin
 				/* code */

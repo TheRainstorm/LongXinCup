@@ -8,7 +8,7 @@ module main_decoder(
 	input [5:0] op_code,
 	input [4:0] rt,
 	input [5:0] funct,
-	output [0:8] main_control
+	output reg [0:8] main_control
     );
 	//main_control信号分解
 	// assign reg_write_enD = 	main_control[0];
@@ -31,12 +31,13 @@ module main_decoder(
 					`EXE_MFHI, `EXE_MFLO:
 									main_control = 9'b1_01_0_0_0_1_0_0;
 					`EXE_DIV, `EXE_DIVU, `EXE_DIV, `EXE_MULT, `EXE_MULTU:
-									main_control = 9'b1_10_0_0_0_0_1_0;
+									main_control = 9'b1_01_0_0_0_0_1_0;
 					//Jump R
 					`EXE_JR:		main_control = 9'b0_00_0_0_0_0_0_0;
-					`EXE_JALR:		main_control = 9'b1_01_1_0_0_0_0_0;
+					`EXE_JALR:		main_control = 9'b1_10_1_0_0_0_0_0;
 					default:	//一般的R type
-	 								main_control = 9'b1_10_0_0_0_0_0_0;
+	 								main_control = 9'b1_01_0_0_0_0_0_0;
+				endcase
 			//一般的I type
 			`EXE_ADDI, `EXE_ADDIU, `EXE_SLTI, `EXE_SLTIU, `EXE_ANDI, `EXE_XORI, `EXE_LUI, `EXE_ORI: 		
 							main_control = 9'b1_00_0_1_0_0_0_0;
@@ -62,6 +63,6 @@ module main_decoder(
 
 			default: 		main_control = 9'b0_00_0_0_0_0_0_0;
 		endcase
-		endcase
+
 	end
 endmodule

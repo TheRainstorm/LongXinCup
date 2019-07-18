@@ -39,7 +39,7 @@ module datapath(
     wire div_stall;
     //data
     wire [31:0] pc, pc_next, pcF, pc_temp, pc_plus4F, pc_plus4D, pc_plus4E, pc_branchD, pc_jumpD;
-    wire [31:0] instrD,instrF, sign_immD, sign_immE, sign_imm_sl2, alu_outE, alu_outM, alu_outW;
+    wire [31:0] instrD,instrF, sign_immD, sign_immE, sign_imm_sl2, alu_outM, alu_outW;
     wire [4:0] rsD, rtD, rdD, rsE, rtE, rdE, write_regE, write_regM, write_regW, saD, saE;
     wire [31:0] rd1D, rd2D, rd1E, rd2E, alu_src_aE, alu_src_bE, alu_src_aE_temp, alu_src_bE_temp;
     wire [31:0] write_dataE, write_dataM, read_dataW, final_read_dataM, final_write_dataM, final_addr;
@@ -47,7 +47,7 @@ module datapath(
     wire [31:0] pc_control_a,pc_control_b;
     wire [5:0] op_codeD, op_codeE, op_codeM;
     //hilo data
-    wire [63:0] alu_out64M, hilo_oD, hilo_oE, alu_src_hiloE;
+    wire [63:0] alu_outE, alu_out64M, hilo_oD, hilo_oE, alu_src_hiloE;
 
     //main_control信号分解
     assign reg_write_enD = 	main_control[0];
@@ -155,14 +155,14 @@ module datapath(
     floprc #(5)  floprc_DE_rt(clk,rst, flushE,rtD,rtE);
     floprc #(5)  floprc_DE_rd(clk,rst, flushE,rdD,rdE);
     floprc #(5) floprc_DE_sa(clk,rst,flushE,saD,saE);
-    floprc #(5) floprc_DE_opcode(clk,rst,flushE,op_codeD,op_codeE);
+    floprc #(6) floprc_DE_opcode(clk,rst,flushE,op_codeD,op_codeE);
     floprc #(32) floprc_DE_imm(clk,rst, flushE,sign_immD,sign_immE);
     floprc #(32) floprc_DE_pc_plus4(clk,rst,flushE,pc_plus4D,pc_plus4E);
     floprc #(64) floprc_DE_hilo(clk,rst,flushE,hilo_oD,hilo_oE);
         //控制信号
     floprc #(1)  floprc_DE_reg_write(clk,rst, flushE,reg_write_enD,reg_write_enE);
     floprc #(2)  floprc_DE_reg_dst(clk,rst, flushE,reg_dstD,reg_dstE);
-    floprc #(1) floprc_DE_alu_src_pc(clk,rst, flushE,alu_src_pcD,alu_src_pc_E);
+    floprc #(1) floprc_DE_alu_src_pc(clk,rst, flushE,alu_src_pcD,alu_src_pcE);
     floprc #(1) floprc_DE_alu_src_imm(clk,rst, flushE,alu_src_immD,alu_src_immE);
     floprc #(1) floprc_DE_mem_to_reg(clk,rst, flushE,mem_to_regD,mem_to_regE);
     floprc #(1) floprc_DE_hilo_1(clk, rst, flushE, hilo_readD, hilo_readE);
@@ -171,7 +171,7 @@ module datapath(
     //
     //alu input
     mux3 #(32) mux3_alu_src_a_forward(rd1E,reg_write_dataW,alu_outM,forwardAE,alu_src_aE_temp);
-    mux2 #(32) mux2_src_pc (alu_src_aE_temp, pc_plus4E, alu_src_pc_E, alu_src_aE);
+    mux2 #(32) mux2_src_pc (alu_src_aE_temp, pc_plus4E, alu_src_pcE, alu_src_aE);
     mux3 #(32) mux3_alu_src_b_forward(rd2E,reg_write_dataW,alu_outM,forwardBE,alu_src_bE_temp);
     mux2 #(32) mux2_src_imm(alu_src_bE_temp, sign_immE, alu_src_immE, alu_src_bE);
         //hilo 数据前推
@@ -194,9 +194,9 @@ module datapath(
     
 //Memory stage
     //input
-    floprc #(5) floprc_EM_sa(clk,rst,flushE,op_codeE,op_codeM);
-    flopr #(1) floprc_EM_reg_write(clk,rst, flushE,reg_write_enE,reg_write_enM);
-    flopr #(1) floprc_EM_mem_to_reg(clk,rst, flushE,mem_to_regE,mem_to_regM);
+    flopr #(6) floprc_EM_sa(clk,rst,op_codeE,op_codeM);
+    flopr #(1) floprc_EM_reg_write(clk,rst,reg_write_enE,reg_write_enM);
+    flopr #(1) floprc_EM_mem_to_reg(clk,rst,mem_to_regE,mem_to_regM);
     flopr #(64) flopr_EM_alu_out(clk,rst,alu_outE,alu_out64M);
     assign alu_outM = alu_out64M[31:0];
     flopr #(32) flopr_EM_write_data(clk,rst,write_dataE,write_dataM);
