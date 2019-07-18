@@ -12,10 +12,10 @@ module alu(
 
 	output reg div_stall	//
     );
-
+	wire overflow;
 	wire [63:0] y_simple, div_result;
 	assign y = (alu_control == `ALU_SIGNED_DIV || alu_control == `ALU_UNSIGNED_DIV) ?
-				div_result : y_simple;
+				div_result : ( (overflow)?64'b0:y_simple );
 	
 	alu_helper alu_helper(
 		.a(a),.b(b),

@@ -13,7 +13,7 @@ module mips(
     output [3:0] Mem_write_en
 	);
 
-    wire [0:8] main_control;
+    wire [0:9] main_control;
     wire [4:0] alu_control;
     
 	wire [0:9] hazard_control;

@@ -4,7 +4,7 @@
 
 module datapath(
     input clk,rst,
-    input [0:8] main_control,
+    input [0:9] main_control,
     input [4:0] alu_control,
     input [0:9] hazard_control,		//
     output [0:43] hazard_data,		//
@@ -32,6 +32,7 @@ module datapath(
     wire [1:0] pc_srcD;
     wire mem_enM;
     wire [3:0] mem_write_enM;
+    wire unsign_extendD;
     //hazard
     wire [1:0] forwardAE,forwardBE;
     wire stallF, flushE; //stallD需要传给指令存储器
@@ -58,6 +59,7 @@ module datapath(
     assign hilo_readD = 		main_control[6];
     assign hilo_write_enD = 	main_control[7];
 	assign branchD = 			main_control[8];	//branch
+    assign unsign_extendD =  main_control[9];
     //hazard_control信号分解
     assign forwardAE = hazard_control[0:1];
     assign forwardBE = hazard_control[2:3];
@@ -118,8 +120,7 @@ module datapath(
     assign saD = instrD[10:6];
 
     //符号扩展
-    sign_extend Sign_extend(instrD[15:0],sign_immD);
-
+    extend_control Extend_Control(unsign_extendD, instrD[15:0],sign_immD);
     //计算 pc_branchD
     sl2 #(32) SL2(sign_immD,sign_imm_sl2);
         //加pc_plus4D

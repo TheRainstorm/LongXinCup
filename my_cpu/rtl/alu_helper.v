@@ -6,7 +6,7 @@ module alu_helper(
 	output reg [63:0] y,
 	
 	output overflow,
-	output zero
+	output zero，
     );
 
     always @(*) begin
@@ -36,6 +36,7 @@ module alu_helper(
             `ALU_UNSIGNED_MULT: y <= a * b;
             `ALU_SIGNED_MULT:   y <= $signed(a) * $signed(b);
 
+            `ALU_LUI:       y <= {b[15:0], 16'b0};
             `ALU_MFHI:      y <= {32'd0, hilo[63:32]};
             `ALU_MFLO:      y <= {32'd0, hilo[31:0]};
             `ALU_MTHI:      y <= {a[31:0], hilo[31:0]};
