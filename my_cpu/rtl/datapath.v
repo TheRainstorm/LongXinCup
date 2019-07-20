@@ -4,7 +4,7 @@
 
 module datapath(
     input clk,rst,
-    input [0:9] main_control,
+    input [0:10] main_control,
     input [4:0] alu_control,
     input [0:9] hazard_control,		//
     output [0:43] hazard_data,		//
@@ -13,12 +13,13 @@ module datapath(
     input [31:0] Read_data,     
     //IM
     output [31:0] PC,           //pcF
-    output stallD,				//stallD需要传给指令存储器
+    output Instr_en,				//stallD需要传给指令存储器
     //DM
     output [31:0] Mem_addr,     //(final_addr) alu_outM
     output [31:0] Write_data,   //final_write_dataM
     output Mem_en,				//mem_enM
-    output [3:0] Mem_write_en	//mem_write_enM
+    output [3:0] Mem_write_en,	//mem_write_enM
+    output instrD
     );
 
 //变量定义
@@ -33,14 +34,18 @@ module datapath(
     wire mem_enM;
     wire [3:0] mem_write_enM;
     wire unsign_extendD;
+    wire Instr_en;
+    wire branchD, jumpD;
+    //instr flush
+    wire flushD;
     //hazard
     wire [1:0] forwardAE,forwardBE;
     wire stallF, flushE; //stallD需要传给指令存储器
     wire forwardAD, forwardBD, forward_hiloE;
     wire div_stall;
-    //data
+    //datas
     wire [31:0] pc, pc_next, pcF, pc_temp, pc_plus4F, pc_plus4D, pc_plus4E, pc_branchD, pc_jumpD;
-    wire [31:0] instrD,instrF, sign_immD, sign_immE, sign_imm_sl2, alu_outM, alu_outW;
+    wire [31:0] instrD, sign_immD, sign_immE, sign_imm_sl2, alu_outM, alu_outW;
     wire [4:0] rsD, rtD, rdD, rsE, rtE, rdE, write_regE, write_regM, write_regW, saD, saE;
     wire [31:0] rd1D, rd2D, rd1E, rd2E, alu_src_aE, alu_src_bE, alu_src_aE_temp, alu_src_bE_temp;
     wire [31:0] write_dataE, write_dataM, read_dataW, final_read_dataM, final_write_dataM, final_addr;
@@ -60,6 +65,8 @@ module datapath(
     assign hilo_write_enD = 	main_control[7];
 	assign branchD = 			main_control[8];	//branch
     assign unsign_extendD =  main_control[9];
+	assign jumpD =   			main_control[10];	//
+
     //hazard_control信号分解
     assign forwardAE = hazard_control[0:1];
     assign forwardBE = hazard_control[2:3];
@@ -76,8 +83,10 @@ module datapath(
     assign hazard_data[40] = branchD;
     assign hazard_data[41:42] = {hilo_readE, hilo_write_enM};
     assign hazard_data[43] = div_stall;
+
     //MIPS核 和内存接口
     assign PC = {2'b00,pcF[31:2]};
+    assign Instr_en = ~stallD;
     assign Mem_addr = final_addr;
     assign Mem_en = mem_enM;
     assign Mem_write_en = mem_write_enM;
@@ -100,8 +109,9 @@ module datapath(
 
 //Decode stage
     //input
-    assign instrD=Instr;	//指令存储器本来就会延迟一个周期
-    flopenr #(32) flopenr_FD_PC_Plus4(clk,~stallD,rst,pc_plus4F,pc_plus4D);
+    assign flushD = branchD || jumpD;
+    flopenrc #(32) flopenrc_FD_Instr(clk, ~stallD, rst, flushD, Instr, instrD);
+    flopenrc #(32) flopenrc_FD_PC_Plus4(clk, ~stallD, rst, flushD, pc_plus4F, pc_plus4D);
     //
     regfile Regfile(
         .clk(~clk),	//时钟取反
@@ -143,6 +153,7 @@ module datapath(
 
     //HILO
     hilo_reg HILO(
+        .clk(~clk),.rst(rst),
         .hilo_i(alu_out64M),
         .we(hilo_write_enM), //both write
 
@@ -176,9 +187,10 @@ module datapath(
     mux3 #(32) mux3_alu_src_b_forward(rd2E,reg_write_dataW,alu_outM,forwardBE,alu_src_bE_temp);
     mux2 #(32) mux2_src_imm(alu_src_bE_temp, sign_immE, alu_src_immE, alu_src_bE);
         //hilo 数据前推
-    mux2 #(64) mux2_HILO(hilo_oE,alu_outM, forward_hiloE,alu_src_hiloE);
+    mux2 #(64) mux2_HILO(hilo_oE,alu_out64M, forward_hiloE,alu_src_hiloE);
     //alu
     alu ALU(
+        .clk(clk),.rst(rst),
         .a(alu_src_aE),.b(alu_src_bE),.hilo(alu_src_hiloE),.sa(saE),
         .alu_control(alu_controlE),
 

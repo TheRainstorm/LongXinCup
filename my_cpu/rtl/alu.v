@@ -1,6 +1,7 @@
 `include "aludefines.vh"
 
 module alu(
+	input clk,rst,
 	input [31:0] a,b,
 	input [63:0] hilo,
 	input [4:0] alu_control,
@@ -12,12 +13,11 @@ module alu(
 
 	output reg div_stall	//
     );
-	wire overflow;
 	wire [63:0] y_simple, div_result;
 	assign y = (alu_control == `ALU_SIGNED_DIV || alu_control == `ALU_UNSIGNED_DIV) ?
 				div_result : ( (overflow)?64'b0:y_simple );
 	
-	alu_helper alu_helper(
+	alu_helper Alu_Helper(
 		.a(a),.b(b),
     	.hilo(hilo),
 		.sa(sa),
@@ -65,8 +65,8 @@ module alu(
 			.clk                        (clk),
 			.rst                        (rst),
 			.signed_div                 (signed_div),
-			.a                          (num1),
-			.b                          (num2),
+			.a                          (a),
+			.b                          (b),
 			.start                      (start_div),
 			.annul                      (1'b0));
 	

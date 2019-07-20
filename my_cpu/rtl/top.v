@@ -8,7 +8,7 @@ module top(
 	
     wire [31:0] PC;
 	wire Mem_en;
-	wire stallD;
+	wire Instr_en;
 
 	wire [31:0] Read_data;
 	wire [31:0] Instr;
@@ -20,7 +20,7 @@ module top(
 		.Instr(Instr),
 		//IM
         .PC(PC),
-	    .stallD(stallD),
+	    .Instr_en(Instr_en),
         //DM
         .Mem_addr(Mem_addr),
         .Write_data(Write_data),
@@ -30,8 +30,8 @@ module top(
 	
 //指令存储器
 	inst_ram Inst_RAM (
-		.clka(clk),    //时钟取反
-		.ena(~stallD),      // 使能
+		.clka(~clk),    //时钟取反
+		.ena(Instr_en),      // 使能
 		.wea(4'b0),      // 写使能
 		.addra(PC),  // 读地址
 		.dina(32'b0),    //  写数据

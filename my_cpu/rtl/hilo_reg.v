@@ -25,7 +25,7 @@ module hilo_reg(
                 output reg [63:0] hilo_o
                 );
    
-   always @(negedge clk) begin
+   always @(posedge clk) begin
       if(rst) begin
          hilo_o <= 0;
       end else if (we) begin

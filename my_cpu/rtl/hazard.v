@@ -23,6 +23,7 @@ module hazard(
     assign branchD = hazard_data[40];
     assign {hilo_readE, hilo_write_enM} = hazard_data[41:42];
     assign divstall = hazard_data[43];
+    
 //OUTPUT
     //                       0:1         2:3         4       5       6       7           8        9
     assign hazard_control = {forwardAE, forwardBE, stallF, stallD, flushE, forwardAD, forwardBD, forward_hilo};

@@ -7,7 +7,7 @@ module controller(
 	input [5:0] op_code,
 	input [4:0] rt,
 	input [5:0] funct,
-	output [0:9] main_control,
+	output [0:10] main_control,
 	output [4:0] alu_control
     );
 
