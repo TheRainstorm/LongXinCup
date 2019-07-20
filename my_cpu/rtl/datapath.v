@@ -45,7 +45,7 @@ module datapath(
     wire div_stall;
     //datas
     wire [31:0] pc, pc_next, pcF, pc_temp, pc_plus4F, pc_plus4D, pc_plus4E, pc_branchD, pc_jumpD;
-    wire [31:0] instrD, sign_immD, sign_immE, sign_imm_sl2, alu_outM, alu_outW;
+    wire [31:0] instrD,instrF, sign_immD, sign_immE, sign_imm_sl2, alu_outM, alu_outW;
     wire [4:0] rsD, rtD, rdD, rsE, rtE, rdE, write_regE, write_regM, write_regW, saD, saE;
     wire [31:0] rd1D, rd2D, rd1E, rd2E, alu_src_aE, alu_src_bE, alu_src_aE_temp, alu_src_bE_temp;
     wire [31:0] write_dataE, write_dataM, read_dataW, final_read_dataM, final_write_dataM, final_addr;
@@ -63,7 +63,7 @@ module datapath(
     assign mem_to_regD = 	main_control[5];
     assign hilo_readD = 		main_control[6];
     assign hilo_write_enD = 	main_control[7];
-	assign branchD = 			main_control[8];	//branch
+	// assign branchD = 			main_control[8];	//branch
     assign unsign_extendD =  main_control[9];
 	assign jumpD =   			main_control[10];	//
 
@@ -109,7 +109,7 @@ module datapath(
 
 //Decode stage
     //input
-    assign flushD = branchD || jumpD;
+    assign flushD = (branchD || jumpD) && ~stallD;
     flopenrc #(32) flopenrc_FD_Instr(clk, ~stallD, rst, flushD, Instr, instrD);
     flopenrc #(32) flopenrc_FD_PC_Plus4(clk, ~stallD, rst, flushD, pc_plus4F, pc_plus4D);
     //
@@ -148,7 +148,8 @@ module datapath(
         .a(pc_control_a),
         .b(pc_control_b),
 
-        .pc_src(pc_srcD)
+        .pc_src(pc_srcD),
+        .branch(branchD)
     );
 
     //HILO
