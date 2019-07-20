@@ -16,7 +16,7 @@ module mem_control(
               output reg        addrErrorSw,
               output reg        addrErrorLw
               );
-   assign final_addr = addr;
+   assign final_addr = {2'b00, addr[31:2]};
    always @(*) begin
       addrErrorLw <= 0;
       addrErrorSw <= 0;
@@ -48,7 +48,7 @@ module mem_control(
            final_wdata <= {4{write_data[7:0]}};
            mem_en <= 1'b1;
            case (addr[1:0])
-             2'b11: memsel <= 4'b1000;
+             2'b11: memsel <= 4'b1000; 
              2'b10: memsel <= 4'b0100;
              2'b01: memsel <= 4'b0010;
              2'b00: memsel <= 4'b0001;

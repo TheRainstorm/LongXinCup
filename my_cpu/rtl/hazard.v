@@ -1,5 +1,5 @@
 module hazard(
-    input [0:43] hazard_data,
+    input [0:47] hazard_data,
     output [0:9] hazard_control
 );
 //1 数据定义
@@ -10,6 +10,7 @@ module hazard(
     wire branchD;
     wire hilo_write_enM, hilo_readE;
     wire divstall;
+    wire mem_sel;
     //temp
     wire lwstall,branchstall;
     //output
@@ -23,6 +24,7 @@ module hazard(
     assign branchD = hazard_data[40];
     assign {hilo_readE, hilo_write_enM} = hazard_data[41:42];
     assign divstall = hazard_data[43];
+    assign mem_sel = hazard_data[44:47];
     
 //OUTPUT
     //                       0:1         2:3         4       5       6       7           8        9
@@ -61,7 +63,7 @@ module hazard(
         end
     end
     //lw stall
-    assign lwstall = mem_to_regE && ( (rsD==rtE) || (rtD==rtE) );
+    assign lwstall =( mem_to_regE && ( (rsD==rtE) || (rtD==rtE) ) ) && ~(&mem_sel);   //bltz 下面4条 rt作为区别码，正好和rtE相同，不需要暂停
 
 //control hazard
     // branch

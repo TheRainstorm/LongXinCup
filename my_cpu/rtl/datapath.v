@@ -7,7 +7,7 @@ module datapath(
     input [0:10] main_control,
     input [4:0] alu_control,
     input [0:9] hazard_control,		//
-    output [0:43] hazard_data,		//
+    output [0:47] hazard_data,		//
 
     input [31:0] Instr,         //instrD
     input [31:0] Read_data,     
@@ -83,7 +83,7 @@ module datapath(
     assign hazard_data[40] = branchD;
     assign hazard_data[41:42] = {hilo_readE, hilo_write_enM};
     assign hazard_data[43] = div_stall;
-
+    assign hazard_data[44:47] = mem_write_enM;
     //MIPS核 和内存接口
     assign PC = {2'b00,pcF[31:2]};
     assign Instr_en = ~stallD;

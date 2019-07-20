@@ -17,7 +17,7 @@ module mips(
     wire [4:0] alu_control;
     
 	wire [0:9] hazard_control;
-    wire [0:43] hazard_data;
+    wire [0:47] hazard_data;
 
     wire [31:0] instrD;
 	datapath Datapath(
