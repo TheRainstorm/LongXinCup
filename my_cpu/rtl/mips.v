@@ -16,7 +16,7 @@ module mips(
     wire [0:10] main_control;
     wire [4:0] alu_control;
     
-	wire [0:9] hazard_control;
+	wire [0:12] hazard_control;
     wire [0:47] hazard_data;
 
     wire [31:0] instrD;

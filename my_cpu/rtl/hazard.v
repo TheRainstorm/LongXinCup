@@ -1,6 +1,6 @@
 module hazard(
     input [0:47] hazard_data,
-    output [0:9] hazard_control
+    output [0:12] hazard_control
 );
 //1 数据定义
     //input
@@ -17,6 +17,7 @@ module hazard(
     reg [1:0] forwardAE, forwardBE;
     reg forward_hilo;
     wire stallF, stallD, flushE, forwardAD, forwardBD;
+    wire stallE, stallM, stallW;
 //INPUT
     assign {rsD,rtD,rsE,rtE,write_regE, write_regM,write_regW} =hazard_data[0:34];
     assign {reg_write_enE,reg_write_enM,reg_write_enW} = hazard_data[35:37];
@@ -28,7 +29,9 @@ module hazard(
     
 //OUTPUT
     //                       0:1         2:3         4       5       6       7           8        9
-    assign hazard_control = {forwardAE, forwardBE, stallF, stallD, flushE, forwardAD, forwardBD, forward_hilo};
+    assign hazard_control = {forwardAE, forwardBE, stallF, stallD, flushE, forwardAD, forwardBD, forward_hilo, 
+                            //10      11    12
+                            stallE, stallM, stallW};
 
 
 //2 具体实现
@@ -75,8 +78,11 @@ module hazard(
                     ( mem_to_regM && ( write_regM==rsD || write_regM == rtD ) )
                   );
     
-    assign flushE = lwstall || branchstall || divstall;
+    assign flushE = lwstall || branchstall;
     assign stallF = lwstall || branchstall || divstall;
     assign stallD = lwstall || branchstall || divstall;
+    assign stallE = divstall;
+    assign stallM = divstall;
+    assign stallW = divstall;
 
 endmodule
