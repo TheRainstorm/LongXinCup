@@ -15,10 +15,10 @@ module mycpu_top (
     input [31:0] data_sram_rdata ,
 
     //debug
-    output debug_wb_pc      ,
-    output debug_wb_rf_wen  ,
-    output debug_wb_rf_wnum ,
-    output debug_wb_rf_wdata
+    output [31:0] debug_wb_pc      ,
+    output [3:0] debug_wb_rf_wen  ,
+    output [4:0] debug_wb_rf_wnum ,
+    output [31:0] debug_wb_rf_wdata
 );
     assign inst_sram_wen = 4'b0;
     assign inst_sram_wdata = 32'b0;
@@ -26,7 +26,7 @@ module mycpu_top (
 
 
 
-
+    wire reg_write_enW;
     wire [0:10] main_control;
     wire [4:0] alu_control;
     
@@ -34,15 +34,17 @@ module mycpu_top (
     wire [0:47] hazard_data;
 
     wire [31:0] instrD;
+    assign debug_wb_rf_wen = {4{reg_write_enW}};
+
 	datapath Datapath(
-		.clk(clk),.rst(rst),
+		.clk(clk),.rst(~resetn),
 		.main_control(main_control),
 		.alu_control(alu_control),
         //Hazard
         .hazard_control(hazard_control),
         .hazard_data(hazard_data),
         //control
-        .instrD(instrD),
+        .instrD(instrD),//output
 
 
         .Read_data(data_sram_rdata),
@@ -57,7 +59,7 @@ module mycpu_top (
         .Mem_write_en(data_sram_wen),
         //debug
         .pcW(debug_wb_pc),
-        .reg_write_enW(debug_wb_rf_wen),
+        .reg_write_enW(reg_write_enW),
         .write_regW(debug_wb_rf_wnum),
         .reg_write_dataW(debug_wb_rf_wdata)
     );

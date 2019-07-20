@@ -51,7 +51,7 @@ module datapath(
     wire stallE, stallM, stallW;
     //datas
     wire [31:0] pc, pc_next, pcF, pc_temp, pc_plus4F, pc_plus4D, pc_plus4E, pc_branchD, pc_jumpD;
-    wire [31:0] instrD,instrF, sign_immD, sign_immE, sign_imm_sl2, alu_outM, alu_outW;
+    wire [31:0] instrD, sign_immD, sign_immE, sign_imm_sl2, alu_outM, alu_outW;
     wire [4:0] rsD, rtD, rdD, rsE, rtE, rdE, write_regE, write_regM, write_regW, saD, saE;
     wire [31:0] rd1D, rd2D, rd1E, rd2E, alu_src_aE, alu_src_bE, alu_src_aE_temp, alu_src_bE_temp;
     wire [31:0] write_dataE, write_dataM, read_dataW, final_read_dataM, final_write_dataM, final_addr;
@@ -63,6 +63,7 @@ module datapath(
     //debug
 
     wire [31:0] pcD, pcE, pcM, pcW;
+    wire [39:0] ascii;
     //main_control信号分解
     assign reg_write_enD = 	main_control[0];
     assign reg_dstD = 		main_control[1:2];
@@ -97,17 +98,18 @@ module datapath(
     assign hazard_data[43] = div_stall;
     assign hazard_data[44:47] = mem_write_enM;
     //MIPS核 和内存接口
-    assign PC = {2'b00,pcF[31:2]};
-    assign Instr_en = ~stallD;
+    assign PC = pcF;
+    assign Instr_en = ~stallD && ~rst;
     assign Mem_addr = final_addr;
     assign Mem_en = mem_enM;
     assign Mem_write_en = mem_write_enM;
     assign Write_data = final_write_dataM;
+    //debug 
 
 
 //Fetch stage
     assign pcF = pc;
-    flopenr #(32) _PC(
+    pc #(32) _PC(
         .clk(clk),.en(~stallF),.rst(rst),
         .d(pc_next),
 
@@ -121,11 +123,13 @@ module datapath(
 
 //Decode stage
     //input
-    assign flushD = (branchD || jumpD) && ~stallD;
-    flopenrc #(32) flopenrc_FD_Instr(clk, ~stallD, rst, flushD, Instr, instrD);
+    // assign flushD = (branchD || jumpD) && ~stallD;
+    assign flushD = 0;
+    // flopenrc #(32) flopenrc_FD_Instr(clk, ~stallD, rst, flushD, Instr, instrD);
+    assign instrD = Instr;
     flopenrc #(32) flopenrc_FD_PC_Plus4(clk, ~stallD, rst, flushD, pc_plus4F, pc_plus4D);
     //
-    flopenrc #(32) flopenrc_FD_PC(clk, ~stallD, rst, flushD, pcF, pcD);
+    flopenrc #(32) flopenrc_FD_PC(clk, ~stallD && ~rst, rst, flushD, pcF, pcD);
 
     regfile Regfile(
         .clk(~clk),	//时钟取反
@@ -142,7 +146,11 @@ module datapath(
     assign rtD = instrD[20:16];
     assign rdD = instrD[15:11];
     assign saD = instrD[10:6];
-
+    
+    instdec instdec1(
+        .instr(instrD),
+        .ascii(ascii)
+    );
     //符号扩展
     extend_control Extend_Control(unsign_extendD, instrD[15:0],sign_immD);
     //计算 pc_branchD

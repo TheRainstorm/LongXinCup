@@ -38,8 +38,10 @@ module main_decoder(
 					//Jump R
 					`EXE_JR:		main_control = 11'b0_00_0_0_0_0_0_0_0_1;
 					`EXE_JALR:		main_control = 11'b1_01_1_0_0_0_0_0_0_1;
+					6'b000000:		
+									main_control = (rt == 5'b00000)?11'b0:11'b1_01_0_0_0_0_0_0_0_0;
 					default:	//一般的R type
-	 								main_control = 11'b1_01_0_0_0_0_0_0_0_0;
+	 								main_control =  11'b1_01_0_0_0_0_0_0_0_0;
 				endcase
 			//一般的I type
 			`EXE_ADDI, `EXE_SLTI, `EXE_ANDI, `EXE_XORI, `EXE_ORI, `EXE_ADDIU, `EXE_SLTIU: 		
