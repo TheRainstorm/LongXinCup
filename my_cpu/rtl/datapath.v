@@ -98,7 +98,8 @@ module datapath(
 
 //Decode stage
     //input
-    assign instrD=Instr;	//指令存储器本来就会延迟一个周期
+    assign instrD=Instr;	// //指令存储器本来就会延迟一个周期 
+    // 或许本来应该取反
     flopenr #(32) flopenr_FD_PC_Plus4(clk,~stallD,rst,pc_plus4F,pc_plus4D);
     //
     regfile Regfile(

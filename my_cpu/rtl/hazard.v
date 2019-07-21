@@ -9,8 +9,12 @@ module hazard(
     wire mem_to_regE,mem_to_regM;
     wire branchD;
     wire hilo_write_enM, hilo_readE;
+    
+    // 除法运算需要暂停
     wire divstall;
+
     //temp
+    // branch指令上一条指令可能会产生数据冲突，采用数据前推与stall暂停的形式进行处理
     wire lwstall,branchstall;
     //output
     reg [1:0] forwardAE, forwardBE;
@@ -30,7 +34,7 @@ module hazard(
 
 //2 具体实现
 //data hazard
-    //forward
+    //forward 组合逻辑
     always @(*) begin
         if( (rsE!=0) && (rsE==write_regM) && reg_write_enM) begin
             forwardAE <= 2'b10;
@@ -55,6 +59,7 @@ module hazard(
     end
     //hilo forward
     always @(*) begin
+    // 当hilo寄存器需要读取的数据
         if(hilo_readE && hilo_write_enM) begin
             forward_hilo <= 1'b1;
         end
