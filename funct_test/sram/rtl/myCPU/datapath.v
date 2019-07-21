@@ -4,10 +4,10 @@
 
 module datapath(
     input clk,rst,
-    input [0:10] main_control,
+    input [0:11] main_control,
     input [4:0] alu_control,
     input [0:12] hazard_control,		//
-    output [0:47] hazard_data,		//
+    output [0:45] hazard_data,		//
 
     input [31:0] Instr,         //instrD
     input [31:0] Read_data,     
@@ -41,6 +41,7 @@ module datapath(
     wire unsign_extendD;
     wire Instr_en;
     wire branchD, jumpD;
+    wire lwD, lwE;
     //instr flush
     wire flushD;
     //hazard
@@ -54,10 +55,10 @@ module datapath(
     wire [31:0] instrD, sign_immD, sign_immE, sign_imm_sl2, alu_outM, alu_outW;
     wire [4:0] rsD, rtD, rdD, rsE, rtE, rdE, write_regE, write_regM, write_regW, saD, saE;
     wire [31:0] rd1D, rd2D, rd1E, rd2E, alu_src_aE, alu_src_bE, alu_src_aE_temp, alu_src_bE_temp;
-    wire [31:0] write_dataE, write_dataM, read_dataW, final_read_dataM, final_write_dataM, final_addr;
+    wire [31:0] write_dataE, write_dataM, read_dataW, final_write_dataM, final_addrM, final_addrW;
     wire [31:0] reg_write_dataW;	//写入寄存器堆的数据
     wire [31:0] pc_control_a,pc_control_b;
-    wire [5:0] op_codeD, op_codeE, op_codeM;
+    wire [5:0] op_codeD, op_codeE, op_codeM, op_codeW;
     //hilo data
     wire [63:0] alu_outE, alu_out64M, hilo_oD, hilo_oE, alu_src_hiloE;
     //debug
@@ -72,9 +73,10 @@ module datapath(
     assign mem_to_regD = 	main_control[5];
     assign hilo_readD = 		main_control[6];
     assign hilo_write_enD = 	main_control[7];
-	// assign branchD = 			main_control[8];	//branch
+	assign branchD = 			main_control[8];	//branch 不一定跳
     assign unsign_extendD =  main_control[9];
 	assign jumpD =   			main_control[10];	//
+    assign lwD =            main_control[11];
 
     //hazard_control信号分解
     assign forwardAE = hazard_control[0:1];
@@ -96,11 +98,12 @@ module datapath(
     assign hazard_data[40] = branchD;
     assign hazard_data[41:42] = {hilo_readE, hilo_write_enM};
     assign hazard_data[43] = div_stall;
-    assign hazard_data[44:47] = mem_write_enM;
+    assign hazard_data[44] = jumpD;
+    assign hazard_data[45] = lwE;
     //MIPS核 和内存接口
     assign PC = pcF;
-    assign Instr_en = ~stallD && ~rst;
-    assign Mem_addr = final_addr;
+    assign Instr_en = ~stallD;
+    assign Mem_addr = final_addrM;
     assign Mem_en = mem_enM;
     assign Mem_write_en = mem_write_enM;
     assign Write_data = final_write_dataM;
@@ -124,12 +127,14 @@ module datapath(
 //Decode stage
     //input
     // assign flushD = (branchD || jumpD) && ~stallD;
-    assign flushD = 0;
+    assign flushD = 1'b0;
+
+
     // flopenrc #(32) flopenrc_FD_Instr(clk, ~stallD, rst, flushD, Instr, instrD);
     assign instrD = Instr;
     flopenrc #(32) flopenrc_FD_PC_Plus4(clk, ~stallD, rst, flushD, pc_plus4F, pc_plus4D);
     //
-    flopenrc #(32) flopenrc_FD_PC(clk, ~stallD && ~rst, rst, flushD, pcF, pcD);
+    flopenrc #(32) flopenrc_FD_PC(clk, ~stallD, rst, flushD, pcF, pcD);
 
     regfile Regfile(
         .clk(~clk),	//时钟取反
@@ -170,8 +175,7 @@ module datapath(
         .a(pc_control_a),
         .b(pc_control_b),
 
-        .pc_src(pc_srcD),
-        .branch(branchD)
+        .pc_src(pc_srcD)
     );
 
     //HILO
@@ -203,8 +207,9 @@ module datapath(
     flopenrc #(1) flopenrc_DE_hilo_1(clk, ~stallE, rst, flushE, hilo_readD, hilo_readE);
     flopenrc #(1) flopenrc_DE_hilo_2(clk, ~stallE, rst, flushE, hilo_write_enD, hilo_write_enE);
     flopenrc #(5) flopenrc_DE_16(clk, ~stallE,rst, flushE,alu_controlD,alu_controlE);
+    flopenrc #(1) flopenrc_DE_lw(clk, ~stallE, rst, flushE, lwD, lwE);
     //
-    flopenrc #(32) flopenrc_DE_PC(clk, ~stallD, rst, flushD, pcD, pcE);
+    flopenrc #(32) flopenrc_DE_PC(clk, ~stallE, rst, flushD, pcD, pcE);
 
     //alu input
     mux3 #(32) mux3_alu_src_a_forward(rd1E,reg_write_dataW,alu_outM,forwardAE,alu_src_aE_temp);
@@ -241,35 +246,41 @@ module datapath(
     flopenr #(5) flopenr_EM_write_reg(clk,~stallM,rst,write_regE,write_regM);
     flopenr #(1) flopenrc_EM_hilo(clk, ~stallM,rst, hilo_write_enE, hilo_write_enM);
     //
-    flopenr #(32) flopenrc_EM_PC(clk, ~stallD, rst, pcE, pcM);
+    flopenr #(32) flopenrc_EM_PC(clk, ~stallM, rst, pcE, pcM);
 
     //mem control
     mem_control mem_control(
         .op_code(op_codeM),
         .addr(alu_outM),
-        .read_data(Read_data),
         .write_data(write_dataM),
     
         .mem_en(mem_enM),
         .memsel(mem_write_enM),
-        .final_addr(final_addr),
+        .final_addr(final_addrM),
         .final_wdata(final_write_dataM),
-        .final_rdata(final_read_dataM),
 
         .addrErrorSw(),
         .addrErrorLw()
     );
 //Write back stage
     //input
+    flopenr #(6) flopenr_MW_opcode(clk, ~stallW, rst,op_codeM,op_codeW);
+    flopenr #(32) flopenr_MW_addr(clk, ~stallW, rst,final_addrM,final_addrW);
     flopenr #(1) flopenr_MW_reg_write(clk,~stallW,rst,reg_write_enM,reg_write_enW);
     flopenr #(1) flopenr_MW_mem_to_reg(clk,~stallW,rst,mem_to_regM,mem_to_regW);
     flopenr #(32)flopenr_MW_alu_out(clk,~stallW,rst,alu_outM,alu_outW);
-
-    flopenr #(32)flopenr_MW_read_data(clk,~stallW,rst,final_read_dataM,read_dataW);//重点
+    flopenr #(32) flopenrc_MW_PC(clk, ~stallW, rst, pcM, pcW);
 
     flopenr #(5) flopenr_MW_write_reg(clk,~stallW,rst,write_regM,write_regW);
     //
-    flopenr #(32) flopenrc_MW_PC(clk, ~stallD, rst, pcM, pcW);
+
+    rdata_process Rdata_Process(
+        .op_code(op_codeW),
+        .addr(final_addrW),
+        .read_data(Read_data),
+
+        .final_rdata(read_dataW)
+    );
 
     //写数据选择
     mux2 #(32) MUX_WRD(.d0(alu_outW),.d1(read_dataW),.s(mem_to_regW),.y(reg_write_dataW));

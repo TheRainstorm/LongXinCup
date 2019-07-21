@@ -1,5 +1,5 @@
 module hazard(
-    input [0:47] hazard_data,
+    input [0:45] hazard_data,
     output [0:12] hazard_control
 );
 //1 数据定义
@@ -10,9 +10,10 @@ module hazard(
     wire branchD;
     wire hilo_write_enM, hilo_readE;
     wire divstall;
-    wire mem_sel;
+    wire jumpD;
+    wire lwE;
     //temp
-    wire lwstall,branchstall;
+    wire lwstall,branchstall, jumpstall;
     //output
     reg [1:0] forwardAE, forwardBE;
     reg forward_hilo;
@@ -25,7 +26,8 @@ module hazard(
     assign branchD = hazard_data[40];
     assign {hilo_readE, hilo_write_enM} = hazard_data[41:42];
     assign divstall = hazard_data[43];
-    assign mem_sel = hazard_data[44:47];
+    assign jumpD = hazard_data[44];
+    assign lwE = hazard_data[45];
     
 //OUTPUT
     //                       0:1         2:3         4       5       6       7           8        9
@@ -66,7 +68,8 @@ module hazard(
         end
     end
     //lw stall
-    assign lwstall =( mem_to_regE && ( (rsD==rtE) || (rtD==rtE) ) ) && ~(&mem_sel);   //bltz 下面4条 rt作为区别码，正好和rtE相同，不需要暂停
+
+    assign lwstall =( mem_to_regE && ( (rsD==rtE) || (rtD==rtE) ) ) && lwE;   //bltz 下面4条 rt作为区别码，正好和rtE相同，不需要暂停
 
 //control hazard
     // branch
@@ -77,10 +80,13 @@ module hazard(
                     ( reg_write_enE && ( write_regE==rsD ||write_regE == rtD ) )||
                     ( mem_to_regM && ( write_regM==rsD || write_regM == rtD ) )
                   );
-    
-    assign flushE = lwstall || branchstall;
-    assign stallF = lwstall || branchstall || divstall;
-    assign stallD = lwstall || branchstall || divstall;
+    assign jumpstall = jumpD && (
+                    ( reg_write_enE && write_regE==rsD )||
+                    ( mem_to_regM && write_regM==rsD )
+                  );
+    assign flushE = lwstall || branchstall ||jumpstall;
+    assign stallF = lwstall || branchstall || divstall ||jumpstall;
+    assign stallD = lwstall || branchstall || divstall ||jumpstall;
     assign stallE = divstall;
     assign stallM = divstall;
     assign stallW = divstall;

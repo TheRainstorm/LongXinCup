@@ -20,18 +20,20 @@ module mycpu_top (
     output [4:0] debug_wb_rf_wnum ,
     output [31:0] debug_wb_rf_wdata
 );
+    wire [31:0] data_addr;
+
     assign inst_sram_wen = 4'b0;
     assign inst_sram_wdata = 32'b0;
 
-
+    assign data_sram_addr=(data_addr[31:16]!=16'hbfaf)?data_addr:{16'h1faf,data_addr[15:0]};
 
 
     wire reg_write_enW;
-    wire [0:10] main_control;
+    wire [0:11] main_control;
     wire [4:0] alu_control;
     
 	wire [0:12] hazard_control;
-    wire [0:47] hazard_data;
+    wire [0:45] hazard_data;
 
     wire [31:0] instrD;
     assign debug_wb_rf_wen = {4{reg_write_enW}};
@@ -53,7 +55,7 @@ module mycpu_top (
         .PC(inst_sram_addr),
 	    .Instr_en(inst_sram_en),
         //DM
-        .Mem_addr(data_sram_addr),
+        .Mem_addr(data_addr),
         .Write_data(data_sram_wdata),
         .Mem_en(data_sram_en),
         .Mem_write_en(data_sram_wen),
