@@ -59,16 +59,16 @@ module alu(
 		end
 
 	div divE(// Outputs
-			.result                     (div_result),
-			.ready                      (div_ready),
+			.result_o                     (div_result),
+			.ready_o                      (div_ready),
 			// Inputs
 			.clk                        (clk),
 			.rst                        (rst),
-			.signed_div                 (signed_div),
-			.a                          (a),
-			.b                          (b),
-			.start                      (start_div),
-			.annul                      (1'b0));
+			.signed_div_i                 (signed_div),
+			.opdata1_i                          (a),
+			.opdata2_i                          (b),
+			.start_i                      (start_div),
+			.annul_i                      (1'b0));
 	
 endmodule
 

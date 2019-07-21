@@ -244,9 +244,9 @@ module datapath(
     assign alu_outM = alu_out64M[31:0];
     flopenr #(32) flopenr_EM_write_data(clk,~stallM,rst,write_dataE,write_dataM);
     flopenr #(5) flopenr_EM_write_reg(clk,~stallM,rst,write_regE,write_regM);
-    flopenr #(1) flopenrc_EM_hilo(clk, ~stallM,rst, hilo_write_enE, hilo_write_enM);
+    flopenr #(1) flopenr_EM_hilo(clk, ~stallM,rst, hilo_write_enE, hilo_write_enM);
     //
-    flopenr #(32) flopenrc_EM_PC(clk, ~stallM, rst, pcE, pcM);
+    flopenr #(32) flopenr_EM_PC(clk, ~stallM, rst, pcE, pcM);
 
     //mem control
     mem_control mem_control(
@@ -266,7 +266,7 @@ module datapath(
     //input
     flopenr #(6) flopenr_MW_opcode(clk, ~stallW, rst,op_codeM,op_codeW);
     flopenr #(32) flopenr_MW_addr(clk, ~stallW, rst,final_addrM,final_addrW);
-    flopenr #(1) flopenr_MW_reg_write(clk,~stallW,rst,reg_write_enM,reg_write_enW);
+    floprc #(1) flopenr_MW_reg_write(clk,rst, stallW, reg_write_enM,reg_write_enW);
     flopenr #(1) flopenr_MW_mem_to_reg(clk,~stallW,rst,mem_to_regM,mem_to_regW);
     flopenr #(32)flopenr_MW_alu_out(clk,~stallW,rst,alu_outM,alu_outW);
     flopenr #(32) flopenrc_MW_PC(clk, ~stallW, rst, pcM, pcW);

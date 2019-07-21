@@ -39,7 +39,7 @@ module main_decoder(
 					//Jump R
 					`EXE_JR:		main_control = 12'b0_00_0_0_0_0_0_0_0_1_0;
 					`EXE_JALR:		main_control = 12'b1_01_1_0_0_0_0_0_0_1_0;
-					6'b000000:		
+					6'b000000:		//nop  sll
 									main_control = (rt == 5'b00000)?12'b0:12'b1_01_0_0_0_0_0_0_0_0_0;
 					default:	//一般的R type
 	 								main_control =  12'b1_01_0_0_0_0_0_0_0_0_0;

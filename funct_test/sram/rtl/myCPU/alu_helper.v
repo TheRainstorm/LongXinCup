@@ -26,9 +26,9 @@ module alu_helper(
             `ALU_SLT:       y <= $signed(a) < $signed(b);
             `ALU_SLTU:      y <= {32'b0, a }< {32'b0, b};
 
-            `ALU_SLL:       y <= {32'b0, b }<< a;
-            `ALU_SRL:       y <= {32'b0, b }>> a;
-            `ALU_SRA:       y <= $signed(b) >>> a;
+            `ALU_SLL:       y <= {32'b0, b }<< a[4:0];
+            `ALU_SRL:       y <= {32'b0, b }>> a[4:0];
+            `ALU_SRA:       y <= $signed(b) >>> a[4:0];
             `ALU_SLL_SA:    y <= {32'b0, b }<< sa;
             `ALU_SRL_SA:    y <= {32'b0, b }>> sa;
             `ALU_SRA_SA:    y <= $signed(b) >>> sa;

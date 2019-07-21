@@ -66,6 +66,9 @@ module hazard(
         if(hilo_readE && hilo_write_enM) begin
             forward_hilo <= 1'b1;
         end
+        else begin
+            forward_hilo <= 1'b0;
+        end
     end
     //lw stall
 

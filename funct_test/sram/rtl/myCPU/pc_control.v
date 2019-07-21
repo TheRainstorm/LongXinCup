@@ -18,18 +18,18 @@ module pc_control (
             `EXE_BEQ:
                 pc_src <= ( a == b ) ? `PC_BRANCH:`PC_PLUS4;
             `EXE_BGTZ: 
-                pc_src <= ( a >  0 ) ? `PC_BRANCH:`PC_PLUS4;
+                pc_src <= (  $signed(a) >  0 ) ? `PC_BRANCH:`PC_PLUS4;
             `EXE_BLEZ:      
-                pc_src <= ( a <= 0 ) ? `PC_BRANCH:`PC_PLUS4;
+                pc_src <= (  $signed(a) <= 0 ) ? `PC_BRANCH:`PC_PLUS4;
             `EXE_BNE:
-                pc_src <= ( a != b ) ? `PC_BRANCH:`PC_PLUS4;
+                pc_src <= (  a != b ) ? `PC_BRANCH:`PC_PLUS4;
             
             `EXE_BRANCHS:   //bltz, bltzal, bgez, bgezal
                 case(rt)
                     `EXE_BLTZ, `EXE_BLTZAL:      
-                        pc_src <= ( a <  0 ) ? `PC_BRANCH:`PC_PLUS4;
+                        pc_src <= (  $signed(a) <  0 ) ? `PC_BRANCH:`PC_PLUS4;
                     `EXE_BGEZ, `EXE_BGEZAL: 
-                        pc_src <= ( a >= 0 ) ? `PC_BRANCH:`PC_PLUS4;
+                        pc_src <= (  $signed(a) >= 0 ) ? `PC_BRANCH:`PC_PLUS4;
                     default:
                         pc_src <=              `PC_PLUS4;
                 endcase
