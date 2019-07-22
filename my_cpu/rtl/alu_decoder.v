@@ -55,6 +55,12 @@ module alu_decoder(
 			//I type
 			`EXE_ADDI: 	alu_control <= `ALU_ADD;
 			`EXE_ADDIU: alu_control <= `ALU_ADDU;
+			`EXE_SLTI: 	alu_control <= `ALU_SLT;
+			`EXE_SLTIU: alu_control <= `ALU_SLTU;
+			`EXE_ANDI: 	alu_control <= `ALU_AND;
+			`EXE_XORI: alu_control <= `ALU_XOR;
+			`EXE_LUI: 	alu_control <= `ALU_LUI;
+			`EXE_ORI: alu_control <= `ALU_OR;
 				//memory
 			`EXE_LW, `EXE_LB, `EXE_LBU, `EXE_LH, `EXE_LHU, `EXE_SW, `EXE_SB, `EXE_SH:
 						alu_control <= `ALU_ADD;

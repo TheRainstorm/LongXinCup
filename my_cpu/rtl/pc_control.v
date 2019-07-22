@@ -11,8 +11,10 @@ module pc_control (
     input [5:0] funct,
     input [31:0] a, b,
 
-    output reg[1:0] pc_src
+    output reg[1:0] pc_src,
+    output branch
 );
+    assign branch = (pc_src == `PC_BRANCH)?1'b1:1'b0;
     always @(*) begin
         case(op_code)
             `EXE_BEQ:

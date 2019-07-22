@@ -1,5 +1,4 @@
 //alu defines
-
 `define ALU_AND             5'b0_0000
 `define ALU_OR              5'b0_0001
 `define ALU_ADD             5'b0_0010
@@ -12,7 +11,7 @@
 `define ALU_SRA             5'b0_1010
 `define ALU_SLTU            5'b0_1011
 `define ALU_UNSIGNED_MULT   5'b0_1100
-`define ALU_ADDR_JUDGE      5'b0_1101
+`define ALU_ADDR_JUDGE      5'b0_1101   //
 `define ALU_XOR             5'b0_1110
 `define ALU_NOR             5'b0_1111
 `define ALU_UNSIGNED_DIV    5'b1_0000
@@ -30,4 +29,3 @@
 `define ALU_SRL_SA          5'b1_1100
 `define ALU_SRA_SA          5'b1_1101
 `define ALU_DONOTHING       5'bx_xxxx
-
