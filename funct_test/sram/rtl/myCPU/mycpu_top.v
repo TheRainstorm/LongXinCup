@@ -67,10 +67,7 @@ module mycpu_top (
     );
 
     controller Control(
-		.op_code(instrD[31:26]),
-        .rt(instrD[20:16]),
-		.funct(instrD[5:0]),
-
+        .instr(instrD),
 		.main_control(main_control),
 		.alu_control(alu_control)
     );

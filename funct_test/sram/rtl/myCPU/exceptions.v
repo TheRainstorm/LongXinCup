@@ -39,6 +39,8 @@ endmodule
 module exception_control(
                   input wire        rst,
                   input wire [31:0] except_type,
+                  input wire        eretM,
+                  input wire [31:0] epc,
                   output reg        flush,
                   output reg [31:0] pc_except,
                   output reg        pc_trap
@@ -49,6 +51,11 @@ module exception_control(
          flush <= 0;
          pc_except <= 32'd0;
          pc_trap <= 0;
+      end
+      else if(eretM) begin
+         flush <= 1;
+         pc_trap <= 1;
+         pc_except <= epc;
       end
       else if(except_type != 32'd0) begin
          flush <= 1;

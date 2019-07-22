@@ -131,8 +131,8 @@
 
 // `define INS_ERET 32'h42000018
 
-`define RS_MTC 6'b00100
-`define RS_MFC 6'b00000
+`define EXE_MTC 5'b00100
+`define EXE_MFC 5'b00000
 
 
 //ALU Sel

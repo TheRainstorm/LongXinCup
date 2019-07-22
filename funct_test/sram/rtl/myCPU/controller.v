@@ -4,27 +4,23 @@
 
 
 module controller(
-	input [5:0] op_code,
-	input [4:0] rt,
-	input [5:0] funct,
+	input [31:0] instr,
 	output [0:11] main_control,
 	output [4:0] alu_control,
 
-	output eretD, breakD, syscallD
+	output ri
     );
 
 	main_decoder Main_Decoder(
-		.op_code(op_code),
-        .rt(rt),
-		.funct(funct),
-
+		.instr(instr),
 		.main_control(main_control)
+		.ri(ri)
 	);
 
 	alu_decoder Alu_Decoder(
-		.op_code(op_code),
-        .rt(rt),
-		.funct(funct),
+		.op_code(instr[31:26]),
+        .rt(instr[25:21]),
+		.funct(instr[5:0]),
 
 		.alu_control(alu_control)
 	);
