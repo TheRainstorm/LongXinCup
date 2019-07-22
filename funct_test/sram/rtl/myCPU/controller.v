@@ -8,7 +8,9 @@ module controller(
 	input [4:0] rt,
 	input [5:0] funct,
 	output [0:11] main_control,
-	output [4:0] alu_control
+	output [4:0] alu_control,
+
+	output eretD, breakD, syscallD
     );
 
 	main_decoder Main_Decoder(

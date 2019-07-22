@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
 // Create Date: 2019/06/23 15:02:46
+`include "defines.vh"
 
 module datapath(
     input clk,rst,
@@ -29,19 +30,21 @@ module datapath(
 
 //变量定义
     // 控制信号
-    wire reg_write_enD, alu_src_pcD, alu_src_immD, mem_to_regD, hilo_readD, hilo_write_enD;//D
-    wire reg_write_enE, alu_src_pcE, alu_src_immE, mem_to_regE, hilo_readE, hilo_write_enE;//E
-    wire reg_write_enM, mem_to_regM, hilo_write_enM;//M
-    wire reg_write_enW, mem_to_regW;//W
+    wire reg_write_enD, alu_src_pcD, alu_src_immD, hilo_readD, hilo_write_enD;//D
+    wire reg_write_enE, alu_src_pcE, alu_src_immE, hilo_readE, hilo_write_enE;//E
+    wire reg_write_enM,  hilo_write_enM reg_write_enW;
+    wire [1:0] write_srcD, write_srcE, write_srcM, write_srcW;
     wire [4:0] alu_controlD, alu_controlE;
     wire [1:0] reg_dstD,reg_dstE;
     wire [1:0] pc_srcD;
+    wire pc_srcM;
     wire mem_enM;
     wire [3:0] mem_write_enM;
     wire unsign_extendD;
     wire Instr_en;
-    wire branchD, jumpD;
+    wire branchD, jumpD,branchE, jumpE;
     wire lwD, lwE;
+    wire cp0_write_enD, cp0_write_enE, cp0_write_enM;
     //instr flush
     wire flushD;
     //hazard
@@ -51,38 +54,46 @@ module datapath(
     wire div_stall;
     wire stallE, stallM, stallW;
     //datas
-    wire [31:0] pc, pc_next, pcF, pc_temp, pc_plus4F, pc_plus4D, pc_plus4E, pc_branchD, pc_jumpD;
-    wire [31:0] instrD, sign_immD, sign_immE, sign_imm_sl2, alu_outM, alu_outW;
+    wire [31:0] pc, pc_next_temp, pc_next, pcF, pc_temp, pc_plus4F, pc_plus4D, pc_plus4E, pc_branchD, pc_jumpD;
+    wire [31:0] instrF, instrD, sign_immD, sign_immE, sign_imm_sl2, alu_outM, alu_outW;
     wire [4:0] rsD, rtD, rdD, rsE, rtE, rdE, write_regE, write_regM, write_regW, saD, saE;
     wire [31:0] rd1D, rd2D, rd1E, rd2E, alu_src_aE, alu_src_bE, alu_src_aE_temp, alu_src_bE_temp;
     wire [31:0] write_dataE, write_dataM, read_dataW, final_write_dataM, final_addrM, final_addrW;
     wire [31:0] reg_write_dataW;	//写入寄存器堆的数据
     wire [31:0] pc_control_a,pc_control_b;
     wire [5:0] op_codeD, op_codeE, op_codeM, op_codeW;
+    wire [31:0] cp0_dataM, cp0_dataW;
+    wire [31:0] pcD, pcE, pcM, pcW;
+
     //hilo data
     wire [63:0] alu_outE, alu_out64M, hilo_oD, hilo_oE, alu_src_hiloE;
     //debug
 
-    wire [31:0] pcD, pcE, pcM, pcW;
     wire [39:0] ascii;
 
-    wire [31:0] pc_temp_next;
-    wire [31:0] pcExcp;
-    wire pc_src;
-    wire [31:0] InstrF;
 
+    //Exception信号
+    wire pc_errorF, pc_errorD, pc_errorE, pc_errorM;
+    wire [31:0] exception_typeM;
+    wire [31:0] cp0_dataM, cp0_countM, cp0_compareM, cp0_statusM, cp0_causeM, cp0_epcM, cp0_configM, cp0_pridM, cp0_badvaddrM, cp0_timer_intM;
+    //
+    wire pc_trapM;
+    wire [31:0] pc_excp;
+
+    //
     //main_control信号分解
     assign reg_write_enD = 	main_control[0];
-    assign reg_dstD = 		main_control[1:2];
-    assign alu_src_pcD = 	main_control[3];
-    assign alu_src_immD = 	main_control[4];
-    assign mem_to_regD = 	main_control[5];
-    assign hilo_readD = 		main_control[6];
-    assign hilo_write_enD = 	main_control[7];
-	assign branchD = 			main_control[8];	//branch 不一定跳
-    assign unsign_extendD =  main_control[9];
-	assign jumpD =   			main_control[10];	//
-    assign lwD =            main_control[11];
+	assign reg_dstD = 		main_control[1:2];	
+	assign alu_src_pcD = 	main_control[3];	
+	assign alu_src_immD = 	main_control[4];
+	assign write_srcD = 		main_control[5:6];	
+
+	assign hilo_read = 		main_control[7];
+	assign hilo_write_en = 	main_control[8];
+	assign branchD = 			main_control[9];
+	assign unsign_extend =   main_control[10];
+	assign jumpD =   			main_control[11];
+	assign cp0_write_enD = 	main_control[12];
 
     //hazard_control信号分解
     assign forwardAE = hazard_control[0:1];
@@ -100,7 +111,7 @@ module datapath(
     //生成hazard_data
     assign hazard_data[0:34] = {rsD,rtD,rsE,rtE,write_regE, write_regM,write_regW};
     assign hazard_data[35:37] = {reg_write_enE,reg_write_enM,reg_write_enW};
-    assign hazard_data[38:39] = {mem_to_regE,mem_to_regM};
+    assign hazard_data[38:39] = {write_srcE[0],write_srcM[0]};  //write_src[0] -> mem_to_reg
     assign hazard_data[40] = branchD;
     assign hazard_data[41:42] = {hilo_readE, hilo_write_enM};
     assign hazard_data[43] = div_stall;
@@ -127,24 +138,22 @@ module datapath(
 
     adder #(32) Adder_1(.carryin(1'b0),.x(pc),.y(32'd4),.s(pc_plus4F));
     //PC选择
+    mux4 #(32) MUX4_PC(.d0(pc_plus4F),.d1(pc_branchD),.d2(pc_jumpD),.d3(pc_control_a),.s(pc_srcD),.y(pc_next_temp));
+    mux2 #(32) MUX2_PC_NEXT(pc_next_temp, pc_excp, pc_trapM, pc_next);
 
-    mux4 #(32) MUX4_PC(.d0(pc_plus4F),.d1(pc_branchD),.d2(pc_jumpD),.d3(pc_control_a),.s(pc_srcD),.y(pc_temp_next));
-
-    mux2 #(32) MUX2_PC_NEXT(pc_temp_next,pcExcp, pc_trap, pc_next);
-
-    pc_exception pcExcpt(Instr, pcF, InstrF, pcErrorF);
-
+    //产生pc_errorF
+    assign pc_errorF = (pcF[1:0] == 2'b00)?1'b0:1'b1;
 //Decode stage
     //input
-    // assign flushD = (branchD || jumpD) && ~stallD;
-    assign flushD = 1'b0;
-
-
-    // flopenrc #(32) flopenrc_FD_Instr(clk, ~stallD, rst, flushD, Instr, instrD);
-    assign instrD = InstrF;
+    assign flushD = 1'b0;// assign flushD = (branchD || jumpD) && ~stallD;// flopenrc #(32) flopenrc_FD_Instr(clk, ~stallD, rst, flushD, Instr, instrD);
+    
+    assign instrD = (pc_errorD)?32'b0:Instr;
     flopenrc #(32) flopenrc_FD_PC_Plus4(clk, ~stallD, rst, flushD, pc_plus4F, pc_plus4D);
-    //
     flopenrc #(32) flopenrc_FD_PC(clk, ~stallD, rst, flushD, pcF, pcD);
+    //except path
+    flopenrc #(1) flopenrc_FD_pc_error(clk, ~stallD, rst, flushD, pc_errorF, pc_errorD);
+
+    //
 
     regfile Regfile(
         .clk(~clk),	//时钟取反
@@ -196,7 +205,12 @@ module datapath(
 
         .hilo_o(hilo_oD)  //always read enable
     );
-//Execute stage
+
+    //exception 
+	assign syscallD = (~ flush_except) ? (op_codeD == 6'b000_000) && (instrD[5:0] == `EXE_BREAK) : 0;
+	assign breakD = (~ flush_except) ? (op_codeD == 6'b000_000) && (instrD[5:0] == `EXE_SYSCALL): 0;
+	assign isDelayD = (~ flush_except) ? (jumpE | branchE) : 0;
+//Execute stage_
     //input
     flopenrc #(32) flopenrc_DE_rd1(clk, ~stallE, rst, flushE,rd1D,rd1E);
     flopenrc #(32) flopenrc_DE_rd2(clk, ~stallE,rst, flushE,rd2D,rd2E);
@@ -213,13 +227,17 @@ module datapath(
     flopenrc #(2)  flopenrc_DE_reg_dst(clk, ~stallE,rst, flushE,reg_dstD,reg_dstE);
     flopenrc #(1) flopenrc_DE_alu_src_pc(clk, ~stallE,rst, flushE,alu_src_pcD,alu_src_pcE);
     flopenrc #(1) flopenrc_DE_alu_src_imm(clk, ~stallE,rst, flushE,alu_src_immD,alu_src_immE);
-    flopenrc #(1) flopenrc_DE_mem_to_reg(clk, ~stallE,rst, flushE,mem_to_regD,mem_to_regE);
+    flopenrc #(2) flopenrc_DE_write_src(clk, ~stallE,rst, flushE,write_srcD,write_srcE);
     flopenrc #(1) flopenrc_DE_hilo_1(clk, ~stallE, rst, flushE, hilo_readD, hilo_readE);
     flopenrc #(1) flopenrc_DE_hilo_2(clk, ~stallE, rst, flushE, hilo_write_enD, hilo_write_enE);
     flopenrc #(5) flopenrc_DE_16(clk, ~stallE,rst, flushE,alu_controlD,alu_controlE);
     flopenrc #(1) flopenrc_DE_lw(clk, ~stallE, rst, flushE, lwD, lwE);
+    flopenrc #(1) flopenrc_DE_cp0_write_en(clk, ~stallE, rst, flushE, cp0_write_enD, cp0_write_enE);
+    flopenrc #(1) flopenrc_DE_branch(clk, ~stallE, rst, flushE, branchD, branchE);
+    flopenrc #(1) flopenrc_DE_jump(clk, ~stallE, rst, flushE, jumpD, jumpE);
     //
     flopenrc #(32) flopenrc_DE_PC(clk, ~stallE, rst, flushD, pcD, pcE);
+    flopenrc #(1) flopenrc_DE_pc_error(clk, ~stallD, rst, flushD, pc_errorD, pc_errorE);
 
     //alu input
     mux3 #(32) mux3_alu_src_a_forward(rd1E,reg_write_dataW,alu_outM,forwardAE,alu_src_aE_temp);
@@ -249,14 +267,17 @@ module datapath(
     //input
     flopenr #(6) flopenr_EM_sa(clk,~stallM, rst,op_codeE,op_codeM);
     flopenr #(1) flopenr_EM_reg_write(clk,~stallM,rst,reg_write_enE,reg_write_enM);
-    flopenr #(1) flopenr_EM_mem_to_reg(clk,~stallM,rst,mem_to_regE,mem_to_regM);
+    flopenr #(2) flopenr_EM_write_src(clk,~stallM,rst,write_srcE,write_srcM);
     flopenr #(64) flopenr_EM_alu_out(clk,~stallM,rst,alu_outE,alu_out64M);
     assign alu_outM = alu_out64M[31:0];
     flopenr #(32) flopenr_EM_write_data(clk,~stallM,rst,write_dataE,write_dataM);
     flopenr #(5) flopenr_EM_write_reg(clk,~stallM,rst,write_regE,write_regM);
+    flopenr #(5) flopenr_EM_rd(clk,~stallM,rst,rdE,rdM);
     flopenr #(1) flopenr_EM_hilo(clk, ~stallM,rst, hilo_write_enE, hilo_write_enM);
+    flopenrc #(1) flopenrc_EM_cp0_write_en(clk, ~stallE, rst, flushE, cp0_write_enE, cp0_write_enM);
     //
     flopenr #(32) flopenr_EM_PC(clk, ~stallM, rst, pcE, pcM);
+    flopenrc #(1) flopenrc_EM_pc_error(clk, ~stallD, rst, flushD, pc_errorE, pc_errorM);
 
     //mem control
     mem_control mem_control(
@@ -273,16 +294,17 @@ module datapath(
         .addrErrorLw()
     );
 
-   wire [31:0] exceptionTypeM;
+   //接受错误信号，给出错误码
+   exception_translate Except_Trans(int, riW, breakM, syscallM, ofM, addrErrorSwM, addrErrorLwM, pc_errorM, exception_typeM); 
+   //接受错误码，给出流水线清空信号，异常处理程序的pc值，和一个pc_next的选择信号
+   exception_control Except_Control(rst, exception_typeM, flushExcp, pc_excp, pc_trap);
    wire int;
    assign int = 0;
-   exception_tp exe_tp(int, riW, breakM, syscallM, ofM, addrErrorSwM, addrErrorLwM, pcErrorM, exceptionTypeM); //接受错误信号，给出错误码
-   exceptions except(rst, exceptionTypeM, flushExcp, pcExcp, pc_trap); //接受错误码，给出流水线清空信号，异常处理程序的pc值，和一个pc_next的选择信号
    wire [5:0] cp0_intM;
    assign cp0_intW = 6'b000_000;
    wire [31:0] bad_addrW;
-   assign bad_addrM = (pcErrorM) ? cp0_epcM : aluoutM;
-   cp0_reg cp0Reg(// Outputs
+   assign bad_addrM = (pc_errorM) ? cp0_epcM : aluoutM;
+   cp0_reg CP0_Reg(// Outputs
                   .data_o               (cp0_dataM),
                   .count_o              (cp0_countM),
                   .compare_o            (cp0_compareM),
@@ -296,23 +318,24 @@ module datapath(
                   // Inputs
                   .clk                  (clk), //时钟
                   .rst                  (rst), //
-                  .we_i                 (cp0writeM),
-                  .waddr_i              (cp0regM),
-                  .raddr_i              (cp0regE),
-                  .data_i               (aluoutM),
+                  .we_i                 (cp0_write_enM), //写使能
+                  .waddr_i              (rdM),      //写地址，5位（32个寄存器）
+                  .raddr_i              (rdM),      //读地址，5位
+                  .data_i               (aluoutM),  //写数据
                   .int_i                (cp0_intM),
                   //for excptions
-                  .excepttype_i         (exceptionTypeM), //需要exception传过来的exceptionTypeM
+                  .excepttype_i         (exception_typeM), //需要exception传过来的exceptionTypeM
                   .current_inst_addr_i      (pcM), //需要当前的pc
-                  .is_in_delayslot_i        (isDelayM),//需要是否是延迟槽指令的信号
-                  .bad_addr_i           (bad_addrM));//需要记录地址错的虚地址
+                  .is_in_delayslot_i        (isDelayM),//需要是否是延迟槽指令的信号  ///
+                  .bad_addr_i           (bad_addrM));//需要记录地址错的虚地址       ///
 //Write back stage
     //input
     flopenr #(6) flopenr_MW_opcode(clk, ~stallW, rst,op_codeM,op_codeW);
     flopenr #(32) flopenr_MW_addr(clk, ~stallW, rst,final_addrM,final_addrW);
     floprc #(1) flopenr_MW_reg_write(clk,rst, stallW, reg_write_enM,reg_write_enW);
-    flopenr #(1) flopenr_MW_mem_to_reg(clk,~stallW,rst,mem_to_regM,mem_to_regW);
+    flopenr #(2) flopenr_MW_write_src(clk,~stallW,rst,write_srcM,write_srcW);
     flopenr #(32)flopenr_MW_alu_out(clk,~stallW,rst,alu_outM,alu_outW);
+    flopenr #(32)flopenr_MW_cp0data(clk,~stallW,rst,cp0_dataM,cp0_dataW);
     flopenr #(32) flopenrc_MW_PC(clk, ~stallW, rst, pcM, pcW);
 
     flopenr #(5) flopenr_MW_write_reg(clk,~stallW,rst,write_regM,write_regW);
@@ -327,5 +350,5 @@ module datapath(
     );
 
     //写数据选择
-    mux2 #(32) MUX_WRD(.d0(alu_outW),.d1(read_dataW),.s(mem_to_regW),.y(reg_write_dataW));
+    mux3 #(32) MUX_WriteData(alu_outW, read_dataW, cp0_dataW, .s(write_srcW), .y(reg_write_dataW));
 endmodule
