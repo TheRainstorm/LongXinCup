@@ -5,7 +5,7 @@
 
 module controller(
 	input [31:0] instr,
-	output [0:11] main_control,
+	output [0:14] main_control,
 	output [4:0] alu_control,
 
 	output ri
@@ -13,13 +13,13 @@ module controller(
 
 	main_decoder Main_Decoder(
 		.instr(instr),
-		.main_control(main_control)
+		.main_control(main_control),
 		.ri(ri)
 	);
 
 	alu_decoder Alu_Decoder(
 		.op_code(instr[31:26]),
-        .rt(instr[25:21]),
+        .rt(instr[20:16]),
 		.funct(instr[5:0]),
 
 		.alu_control(alu_control)

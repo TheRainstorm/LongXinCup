@@ -87,7 +87,7 @@ module hazard(
                     ( reg_write_enE && write_regE==rsD )||
                     ( mem_to_regM && write_regM==rsD )
                   );
-    assign flushE = lwstall || branchstall ||jumpstall;
+    assign flushE = lwstall || branchstall ||jumpstall;     //
     assign stallF = lwstall || branchstall || divstall ||jumpstall;
     assign stallD = lwstall || branchstall || divstall ||jumpstall;
     assign stallE = divstall;

@@ -29,7 +29,7 @@ module mycpu_top (
 
 
     wire reg_write_enW;
-    wire [0:11] main_control;
+    wire [0:14] main_control;
     wire [4:0] alu_control;
     
 	wire [0:12] hazard_control;

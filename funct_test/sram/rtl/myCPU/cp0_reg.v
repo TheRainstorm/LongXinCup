@@ -36,7 +36,7 @@ module cp0_reg(
                input wire           is_in_delayslot_i,
                input wire [`RegBus] bad_addr_i,
 
-               output reg [`RegBus] data_o,
+               output reg [`RegBus] data_o,     //read output
                output reg [`RegBus] count_o,
                output reg [`RegBus] compare_o,
                output reg [`RegBus] status_o,
@@ -62,11 +62,9 @@ module cp0_reg(
          count_o <= count_o + 1;
          cause_o[15:10] <= int_i;
          if(compare_o != `ZeroWord && count_o == compare_o) begin
-            /* code */
             timer_int_o <= `InterruptAssert;
          end
          if(we_i == `WriteEnable) begin
-            /* code */
             case (waddr_i)
               `CP0_REG_COUNT:begin 
                  count_o <= data_i;
@@ -90,7 +88,7 @@ module cp0_reg(
             endcase
          end
          case (excepttype_i)
-           32'h00000001:begin 
+           32'h00000001:begin          //int
               if(is_in_delayslot_i == `InDelaySlot) begin
                  /* code */
                  epc_o <= current_inst_addr_i - 4;
@@ -102,7 +100,7 @@ module cp0_reg(
               status_o[1] <= 1'b1;
               cause_o[6:2] <= 5'b00000;
            end
-           32'h00000004:begin 
+           32'h00000004:begin          //addr error lw | pc error
               if(is_in_delayslot_i == `InDelaySlot) begin
                  /* code */
                  epc_o <= current_inst_addr_i - 4;
@@ -115,7 +113,7 @@ module cp0_reg(
               cause_o[6:2] <= 5'b00100;
               badvaddr <= bad_addr_i;
            end
-           32'h00000005:begin 
+           32'h00000005:begin          //addr error sw
               if(is_in_delayslot_i == `InDelaySlot) begin
                  /* code */
                  epc_o <= current_inst_addr_i - 4;
@@ -128,7 +126,7 @@ module cp0_reg(
               cause_o[6:2] <= 5'b00101;
               badvaddr <= bad_addr_i;
            end
-           32'h00000008:begin 
+           32'h00000008:begin          //syscall
               if(is_in_delayslot_i == `InDelaySlot) begin
                  /* code */
                  epc_o <= current_inst_addr_i - 4;
@@ -140,7 +138,7 @@ module cp0_reg(
               status_o[1] <= 1'b1;
               cause_o[6:2] <= 5'b01000;
            end
-           32'h00000009:begin 
+           32'h00000009:begin          //break
               if(is_in_delayslot_i == `InDelaySlot) begin
                  /* code */
                  epc_o <= current_inst_addr_i - 4;
@@ -152,7 +150,7 @@ module cp0_reg(
               status_o[1] <= 1'b1;
               cause_o[6:2] <= 5'b01001;
            end
-           32'h0000000a:begin 
+           32'h0000000a:begin             //ri
               if(is_in_delayslot_i == `InDelaySlot) begin
                  /* code */
                  epc_o <= current_inst_addr_i - 4;
@@ -164,7 +162,7 @@ module cp0_reg(
               status_o[1] <= 1'b1;
               cause_o[6:2] <= 5'b01010;
            end
-           32'h0000000c:begin 
+           32'h0000000c:begin             //overflow
               if(is_in_delayslot_i == `InDelaySlot) begin
                  /* code */
                  epc_o <= current_inst_addr_i - 4;
@@ -176,7 +174,7 @@ module cp0_reg(
               status_o[1] <= 1'b1;
               cause_o[6:2] <= 5'b01100;
            end
-           32'h0000000d:begin 
+           32'h0000000d:begin             //自陷异常
               if(is_in_delayslot_i == `InDelaySlot) begin
                  /* code */
                  epc_o <= current_inst_addr_i - 4;
@@ -188,17 +186,17 @@ module cp0_reg(
               status_o[1] <= 1'b1;
               cause_o[6:2] <= 5'b01101;
            end
-           32'h0000000e:begin 
+           32'h0000000e:begin       //eret
               status_o[1] <= 1'b0;
            end
            default : /* default */;
+
          endcase
       end
    end
 
    always @(*) begin
       if(rst == `RstEnable) begin
-         /* code */
          data_o <= `ZeroWord;
       end else begin 
          case (raddr_i)

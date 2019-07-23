@@ -15,7 +15,7 @@ module alu(
     );
 	wire [63:0] y_simple, div_result;
 	assign y = (alu_control == `ALU_SIGNED_DIV || alu_control == `ALU_UNSIGNED_DIV) ?
-				div_result : ( (overflow)?64'b0:y_simple );
+				div_result : y_simple;
 	
 	alu_helper Alu_Helper(
 		.a(a),.b(b),
