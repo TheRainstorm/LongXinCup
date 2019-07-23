@@ -324,7 +324,7 @@ module datapath(
     mux2 #(32) forwardM(alu_outM, cp0_dataM, cp0_readM, forward_dataM);
 
     wire int;
-    assign int = 0;
+    assign int = (cp0_write_enM && rdM == `CP0_REG_CAUSE && (write_dataM[8] || write_dataM[9] )); //软中断
     wire [5:0] cp0_intM;
     assign cp0_intM = 6'b000_000;
     wire [31:0] bad_addrM;
