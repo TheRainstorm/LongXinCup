@@ -38,10 +38,12 @@ module mycpu_top (
     wire [31:0] instrD;
     assign debug_wb_rf_wen = {4{reg_write_enW}};
 
+    wire ri;
 	datapath Datapath(
 		.clk(clk),.rst(~resetn),
 		.main_control(main_control),
 		.alu_control(alu_control),
+        .riD(ri),
         //Hazard
         .hazard_control(hazard_control),
         .hazard_data(hazard_data),
@@ -69,7 +71,8 @@ module mycpu_top (
     controller Control(
         .instr(instrD),
 		.main_control(main_control),
-		.alu_control(alu_control)
+		.alu_control(alu_control),
+        .ri(ri)
     );
 
     hazard Hazard(
