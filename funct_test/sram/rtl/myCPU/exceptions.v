@@ -81,7 +81,7 @@ module exception_control(
               pc_except <= 32'hbfc0_0380;
            end
            32'h0000_000e: begin     //eret
-               pc_except <= epc;
+              pc_except <= epc;
            end
          endcase
       end

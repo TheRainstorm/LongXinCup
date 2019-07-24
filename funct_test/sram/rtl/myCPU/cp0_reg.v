@@ -1,23 +1,6 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
+
 // Create Date: 2017/08/11 07:49:12
-// Design Name: 
-// Module Name: cp0_reg
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
 
 `include "defines.vh"
 module cp0_reg(
@@ -47,46 +30,48 @@ module cp0_reg(
                output reg [`RegBus] badvaddr,
                output reg           timer_int_o
                );
-
    always @(negedge clk) begin
       if(rst == `RstEnable) begin
-         count_o <= `ZeroWord;
-         compare_o <= `ZeroWord;
-         status_o <= 32'b00010000000000000000000000000000;
-         cause_o <= `ZeroWord;
-         epc_o <= `ZeroWord;
-         config_o <= 32'b00000000000000001000000000000000;
-         prid_o <= 32'b00000000010011000000000100000010;
-         timer_int_o <= `InterruptNotAssert;
+         count_o <=           `ZeroWord;
+         compare_o <=         `ZeroWord;
+         status_o <=          32'h1000_0000;
+         cause_o <=           `ZeroWord;
+         epc_o <=             `ZeroWord;
+         config_o <=          32'h0000_8000;
+         prid_o <=            32'h004c_0102;
+         timer_int_o <=       `InterruptNotAssert;
       end else begin
          count_o <= count_o + 1;
          cause_o[15:10] <= int_i;
-         if(compare_o != `ZeroWord && count_o == compare_o) begin
+         if(compare_o != 32'b0 && count_o == compare_o) begin
             timer_int_o <= `InterruptAssert;
          end
-         if(we_i == `WriteEnable) begin
+         if(we_i) begin
             case (waddr_i)
-              `CP0_REG_COUNT:begin 
-                 count_o <= data_i;
-              end
-              `CP0_REG_COMPARE:begin 
-                 compare_o <= data_i;
-                 timer_int_o <= `InterruptNotAssert;
-              end
-              `CP0_REG_STATUS:begin 
-                 status_o <= data_i;
-              end
-              `CP0_REG_CAUSE:begin 
-                 cause_o[9:8] <= data_i[9:8];
-                 cause_o[23] <= data_i[23];
-                 cause_o[22] <= data_i[22];
-              end
-              `CP0_REG_EPC:begin 
-                 epc_o <= data_i;
-              end
-              default : /* default */;
+               `CP0_REG_COUNT:begin 
+                  count_o <= data_i;
+               end
+               `CP0_REG_COMPARE:begin 
+                  compare_o <= data_i;
+                  timer_int_o <= `InterruptNotAssert;
+               end
+               `CP0_REG_STATUS:begin 
+                  status_o <= data_i;
+               end
+               `CP0_REG_CAUSE:begin 
+                  cause_o[9:8] <= data_i[9:8];
+                  cause_o[23] <= data_i[23];
+                  cause_o[22] <= data_i[22];
+               end
+               `CP0_REG_EPC:begin 
+                  epc_o <= data_i;
+               end
+               default : /* default */;
             endcase
          end
+      end
+   end
+   always @(negedge clk) begin
          case (excepttype_i)
            32'h00000001:begin          //int
               if(is_in_delayslot_i == `InDelaySlot) begin
@@ -113,7 +98,7 @@ module cp0_reg(
               cause_o[6:2] <= 5'b00100;
               badvaddr <= bad_addr_i;
            end
-           32'h00000005:begin          //addr error sw
+           32'h0000000a:begin             //ri
               if(is_in_delayslot_i == `InDelaySlot) begin
                  /* code */
                  epc_o <= current_inst_addr_i - 4;
@@ -123,8 +108,7 @@ module cp0_reg(
                  cause_o[31] <= 1'b0;
               end
               status_o[1] <= 1'b1;
-              cause_o[6:2] <= 5'b00101;
-              badvaddr <= bad_addr_i;
+              cause_o[6:2] <= 5'b01010;
            end
            32'h00000008:begin          //syscall
               if(is_in_delayslot_i == `InDelaySlot) begin
@@ -150,7 +134,7 @@ module cp0_reg(
               status_o[1] <= 1'b1;
               cause_o[6:2] <= 5'b01001;
            end
-           32'h0000000a:begin             //ri
+           32'h00000005:begin          //addr error sw
               if(is_in_delayslot_i == `InDelaySlot) begin
                  /* code */
                  epc_o <= current_inst_addr_i - 4;
@@ -160,7 +144,8 @@ module cp0_reg(
                  cause_o[31] <= 1'b0;
               end
               status_o[1] <= 1'b1;
-              cause_o[6:2] <= 5'b01010;
+              cause_o[6:2] <= 5'b00101;
+              badvaddr <= bad_addr_i;
            end
            32'h0000000c:begin             //overflow
               if(is_in_delayslot_i == `InDelaySlot) begin
@@ -192,7 +177,6 @@ module cp0_reg(
            default : /* default */;
 
          endcase
-      end
    end
 
    always @(*) begin

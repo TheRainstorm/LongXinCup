@@ -26,9 +26,10 @@ module mycpu_top (
     assign inst_sram_wdata = 32'b0;
 
     assign data_sram_addr=(data_addr[31:16]!=16'hbfaf)?data_addr:{16'h1faf,data_addr[15:0]};
-
+    assign debug_wb_rf_wen = {4{reg_write_enW}};
 
     wire reg_write_enW;
+
     wire [0:14] main_control;
     wire [4:0] alu_control;
     
@@ -36,17 +37,17 @@ module mycpu_top (
     wire [0:45] hazard_data;
 
     wire [31:0] instrD;
-    assign debug_wb_rf_wen = {4{reg_write_enW}};
 
     wire ri;
+
 	datapath Datapath(
 		.clk(clk),.rst(~resetn),
 		.main_control(main_control),
 		.alu_control(alu_control),
         .riD(ri),
         //Hazard
-        .hazard_control(hazard_control),
-        .hazard_data(hazard_data),
+        .hazard_control(hazard_control),//input
+        .hazard_data(hazard_data),//output
         //control
         .instrD(instrD),//output
 
@@ -80,6 +81,4 @@ module mycpu_top (
 
         .hazard_control(hazard_control)
     );
-
-
 endmodule
