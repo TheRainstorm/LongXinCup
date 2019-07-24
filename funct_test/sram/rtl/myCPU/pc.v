@@ -3,6 +3,7 @@ module pc #(parameter WIDTH=8)(
     input [WIDTH-1:0] d,
     output reg [ WIDTH-1:0] q
 );
+    reg q = 0;
     reg s = 1'b0;
     always @(posedge clk) begin
         if(~rst && ~s) begin

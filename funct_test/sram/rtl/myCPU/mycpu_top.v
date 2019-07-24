@@ -37,6 +37,7 @@ module mycpu_top (
     wire flush_exceptM;
 	datapath Datapath(
 		.clk(clk),.rst(~resetn),
+        .int_hard(int),
 
         //control
         .instrD(instrD),

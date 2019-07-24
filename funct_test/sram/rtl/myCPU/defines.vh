@@ -1,7 +1,7 @@
 // global macro definition
 `define RstEnable 		1'b1
 `define RstDisable		1'b0
-`define ZeroWord		32'h00000000
+`define ZeroWord		32'h0000_0000
 `define WriteEnable		1'b1
 `define WriteDisable	1'b0
 `define ReadEnable		1'b1
@@ -129,22 +129,9 @@
 
 `define EXE_MTCMFC 6'b010000
 
-// `define INS_ERET 32'h42000018
-
 `define EXE_MTC 5'b00100
 `define EXE_MFC 5'b00000
 
-
-//ALU Sel
-`define EXE_RES_LOGIC 3'b001
-`define EXE_RES_SHIFT 3'b010
-`define EXE_RES_MOVE 3'b011	
-`define EXE_RES_ARITHMETIC 3'b100	
-`define EXE_RES_MUL 3'b101
-`define EXE_RES_JUMP_BRANCH 3'b110
-`define EXE_RES_LOAD_STORE 3'b111	
-
-`define EXE_RES_NOP 3'b000
 
 //div
 `define DivFree 2'b00
@@ -155,30 +142,26 @@
 `define DivResultNotReady 1'b0
 `define DivStart 1'b1
 `define DivStop 1'b0
-// inst ROM macro definition
-`define InstAddrBus		31:0
-`define InstBus 		31:0
-`define InstMemNum		131071
-`define InstMemNumLog2	17
 
-// //data RAM
-`define DataAddrBus 31:0
-`define DataBus 31:0
-`define DataMemNum 64
-`define DataMemNumLog2 17
-`define ByteWidth 7:0
+//Exception code
+`define EXC_CODE_INT        5'h00      //中断
+`define EXC_CODE_ADEL       5'h04      //地址错例外（读数据或取指令）
+`define EXC_CODE_ADES       5'h05      //地址错例外（写数据）
+`define EXC_CODE_SYS        5'h08      //系统调用例外。 
+`define EXC_CODE_BP         5'h09      //断点例外。
+`define EXC_CODE_RI         5'h0a      //保留指令例外。
+`define EXC_CODE_OV         5'h0c      //算出溢出例外。
 
-//regfiles macro definition
-
-`define RegAddrBus		4:0
-`define RegBus 			31:0
-`define RegWidth		32
-`define DoubleRegWidth	64
-`define DoubleRegBus	63:0
-`define RegNum			32
-`define RegNumLog2		5
-`define NOPRegAddr		5'b00000
-
+//Exception type
+`define EXC_TYPE_INT        32'h0000_0001      //中断
+`define EXC_TYPE_ADEL       32'h0000_0004      //地址错例外（读数据或取指令）
+`define EXC_TYPE_ADES       32'h0000_0005      //地址错例外（写数据）
+`define EXC_TYPE_SYS        32'h0000_0008      //系统调用例外。 
+`define EXC_TYPE_BP         32'h0000_0009      //断点例外。
+`define EXC_TYPE_RI         32'h0000_000a      //保留指令例外。
+`define EXC_TYPE_OV         32'h0000_000c      //算出溢出例外。
+`define EXC_TYPE_ERET       32'h0000_000e      //异常返回“例外” 
+`define EXC_TYPE_NOEXC      32'h0000_0000
 
 //CP0
 `define CP0_REG_BADVADDR    5'b01000       //只读
