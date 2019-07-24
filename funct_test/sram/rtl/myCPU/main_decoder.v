@@ -6,9 +6,11 @@
 
 module main_decoder(
 	input [31:0] instr,
+	input flush_exceptM,
 	output reg [0:14] main_control,
 
-	output reg ri
+	output reg riD,
+	output wire syscallD, breakD, eretD
     );
 	//main_control信号分解
 	// assign reg_write_enD = 	main_control[0];
@@ -36,8 +38,12 @@ module main_decoder(
 	assign rt = instr[20:16];
 	assign funct = instr[5:0];
 
+	assign syscallD = (~ flush_exceptM) ? (op_code == `EXE_SPECIAL_INST) && (funct == `EXE_SYSCALL) : 0;
+	assign breakD = (~ flush_exceptM) ? (op_code == `EXE_SPECIAL_INST) && (funct == `EXE_BREAK): 0;
+    assign eretD = (instr == `EXE_ERET)? 1:0;
+
 	always @(*) begin
-		ri = 1'b0;
+		riD = 1'b0;
 		case(op_code)
 			`EXE_R_TYPE:
 				case(funct)
@@ -52,7 +58,7 @@ module main_decoder(
 					`EXE_JR: begin
 							if(instr[20:6] != 15'b0)
 							begin
-								ri = 1;
+								riD = 1;
 								main_control = 15'b0_00_0_0_00_0_0_0_0_0_0_0_0;
 							end
 							else
@@ -61,7 +67,7 @@ module main_decoder(
 					`EXE_JALR: begin
 							if(instr[20:16] != 5'b0 || instr[10:6] != 5'b0)
 							begin
-								ri = 1;
+								riD = 1;
 								main_control = 15'b0_00_0_0_00_0_0_0_0_0_0_0_0;
 							end
 							else
@@ -88,7 +94,7 @@ module main_decoder(
 			 	if (rt == 5'b00000)
 					main_control = 15'b0_00_0_0_00_0_0_1_0_0_0_0_0;
 				else begin
-					ri <= 1;
+					riD <= 1;
 				  	main_control = 15'b0_00_0_0_00_0_0_0_0_0_0_0_0;
 				end
 			end
@@ -97,7 +103,7 @@ module main_decoder(
 			 	if (rt == 5'b00000)
 					main_control = 15'b0_00_0_0_00_0_0_1_0_0_0_0_0;
 				else begin
-					ri <= 1;
+					riD <= 1;
 				  	main_control = 15'b0_00_0_0_00_0_0_0_0_0_0_0_0;
 				end
 			end
@@ -108,7 +114,7 @@ module main_decoder(
                     `EXE_BLTZ, `EXE_BGEZ: 
                        		main_control =  15'b0_00_0_0_00_0_0_1_0_0_0_0_0;
                     default: begin
-							ri = 1;
+							riD = 1;
                         	main_control =  15'b0_00_0_0_00_0_0_0_0_0_0_0_0;
 						end
 				endcase
@@ -120,16 +126,14 @@ module main_decoder(
 							main_control =  15'b1_00_0_0_10_0_0_0_0_0_0_0_1;
 					`EXE_MTC:
 							main_control =  15'b0_00_0_0_00_0_0_0_0_0_0_1_0;
-					`EXE_ERET:
-							main_control =  15'b0_00_0_0_00_0_0_0_0_0_0_0_0;
 					default: begin
-							ri = 1;
-							main_control =  15'b0_00_0_0_00_0_0_0_0_0_0_0_0;
-						end
+						riD = (eretD == 1'b1)? 1'b0 : 1'b1;
+						main_control =  15'b0_00_0_0_00_0_0_0_0_0_0_0_0;
+					end
 				endcase
 			default: 
 				begin
-					ri = 1;
+					riD = 1;
 					main_control =  15'b0_00_0_0_00_0_0_0_0_0_0_0_0;
 				end
 		endcase

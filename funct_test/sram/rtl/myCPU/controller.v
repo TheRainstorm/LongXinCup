@@ -5,16 +5,22 @@
 
 module controller(
 	input [31:0] instr,
+	input flush_exceptM,
+
 	output [0:14] main_control,
 	output [4:0] alu_control,
-
-	output ri
+	output riD, syscallD, breakD, eretD
     );
 
 	main_decoder Main_Decoder(
 		.instr(instr),
+		.flush_exceptM(flush_exceptM),
+
 		.main_control(main_control),
-		.ri(ri)
+		.riD(riD),
+		.syscallD(syscallD),
+		.breakD(breakD),
+		.eretD(eretD)
 	);
 
 	alu_decoder Alu_Decoder(

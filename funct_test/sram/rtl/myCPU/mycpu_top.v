@@ -20,8 +20,6 @@ module mycpu_top (
     output [4:0] debug_wb_rf_wnum ,
     output [31:0] debug_wb_rf_wdata
 );
-    wire [31:0] data_addr;
-
     assign inst_sram_wen = 4'b0;
     assign inst_sram_wdata = 32'b0;
 
@@ -29,39 +27,43 @@ module mycpu_top (
     assign debug_wb_rf_wen = {4{reg_write_enW}};
 
     wire reg_write_enW;
-
+    wire [31:0] data_addr;
     wire [0:14] main_control;
     wire [4:0] alu_control;
-    
 	wire [0:12] hazard_control;
     wire [0:45] hazard_data;
-
     wire [31:0] instrD;
-
-    wire ri;
-
+    wire riD, syscallD, breakD, eretD;
+    wire flush_exceptM;
 	datapath Datapath(
 		.clk(clk),.rst(~resetn),
-		.main_control(main_control),
-		.alu_control(alu_control),
-        .riD(ri),
-        //Hazard
-        .hazard_control(hazard_control),//input
-        .hazard_data(hazard_data),//output
+
         //control
-        .instrD(instrD),//output
+        .instrD(instrD),
+        .flush_exceptM(flush_exceptM),
 
+        .main_control(main_control),
+		.alu_control(alu_control),
+        .riD(riD),
+		.syscallD(syscallD),
+		.breakD(breakD),
+		.eretD(eretD),
+        //Hazard
+        .hazard_data(hazard_data),
 
-        .Read_data(data_sram_rdata),
-        .Instr(inst_sram_rdata),
+        .hazard_control(hazard_control),
         //IM
         .PC(inst_sram_addr),
 	    .Instr_en(inst_sram_en),
+        
+        .Instr(inst_sram_rdata),
         //DM
         .Mem_addr(data_addr),
         .Write_data(data_sram_wdata),
         .Mem_en(data_sram_en),
         .Mem_write_en(data_sram_wen),
+
+        .Read_data(data_sram_rdata),
         //debug
         .pcW(debug_wb_pc),
         .reg_write_enW(reg_write_enW),
@@ -71,9 +73,14 @@ module mycpu_top (
 
     controller Control(
         .instr(instrD),
+        .flush_exceptM(flush_exceptM),
+
 		.main_control(main_control),
 		.alu_control(alu_control),
-        .ri(ri)
+        .riD(riD),
+        .syscallD(syscallD),
+		.breakD(breakD),
+		.eretD(eretD)
     );
 
     hazard Hazard(
