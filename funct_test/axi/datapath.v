@@ -85,6 +85,10 @@ module datapath(
     wire [31:0] cp0_dataM, cp0_dataW, cp0_countM, cp0_compareM, cp0_statusM, cp0_causeM, cp0_epcM, cp0_configM, cp0_pridM, cp0_badvaddrM; 
     wire cp0_timer_intM;
 
+    //debug
+    wire [39:0] ascii;
+    wire start;
+
     //main_control
     assign reg_write_enD    = main_control[0];
     assign reg_dstD         = main_control[1:2];	
@@ -125,21 +129,19 @@ module datapath(
 
     //MIPS interface
     assign PC = pcF;
-    assign Instr_en = ~stallD && ~rst && ~flush_exceptW;
+    assign Instr_en = start && ~flush_exceptW;
     assign Mem_addr = final_addrM ;
     assign Mem_en = mem_enM && ~flush_exceptW; //5W flush, 4M write memory will create error
     assign Mem_write_en = mem_write_enM;
     assign Write_data = final_write_dataM;
 
-    //debug
-    wire [39:0] ascii;
-
 //Fetch stage
     assign pcF = pc;
     pc #(32) _PC(
-        .clk(clk),.en(~stallF || flush_exceptW),.rst(rst),
+        .clk(clk),.en(start && (~stallF || flush_exceptW)),.rst(rst),
         .d(pc_next),
 
+        .start(start),
         .q(pc)
     );
     //pc_next select
@@ -148,7 +150,7 @@ module datapath(
     //pc plus4F
     adder #(32) Adder_1(.carryin(1'b0),.x(pc),.y(32'd4),.s(pc_plus4F));
     //pc_errorF
-    assign pc_errorF = (pcF[1:0] == 2'b00)?1'b0:1'b1;
+    assign pc_errorF = (start && pcF[1:0] != 2'b00)?1'b1:1'b0;
     //instrF
     assign instrF = Instr;
 //Decode stage

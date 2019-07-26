@@ -1,5 +1,5 @@
 module mips (
-    input clk,resetn,
+    input clk,rst,
     input [5:0] int,
     input stall_by_sram,
 
@@ -37,7 +37,7 @@ module mips (
     wire riD, syscallD, breakD, eretD;
     wire flush_exceptM;
 	datapath Datapath(
-		.clk(clk),.rst(~resetn),
+		.clk(clk),.rst(rst),
         .int_hard(int),
         //control
         .instrD(instrD),

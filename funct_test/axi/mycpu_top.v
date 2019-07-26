@@ -89,7 +89,7 @@ wire [31:0] cpu_data_rdata;
 
 wire stall_by_sram;
 mips Mips(
-    .clk(aclk),.resetn(aresetn),
+    .clk(~aclk),.rst(~aresetn),
     .int(int),
     .stall_by_sram(stall_by_sram),      //input
 
@@ -166,9 +166,10 @@ sram_to_likesram Sram_to_Likesram(
     .data_data_ok(data_data_ok)
 );
 
-cpu_axi_interface Cpu_axi_Interface(
+likesram2axi Cpu_axi_Interface(
     .clk(aclk),  //input
     .resetn(aresetn),
+    .data_sram_wen(data_sram_wen),
 
     .inst_req(inst_req), //input from sram_to_likesram
     .inst_wr(inst_wr),

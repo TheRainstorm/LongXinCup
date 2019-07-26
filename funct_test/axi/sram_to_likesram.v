@@ -26,7 +26,7 @@ module sram_to_likesram(
 	input  wire [5 :0] tlb_exce,
 
 	output wire        stall,
-
+	//to misp
 	input  wire        inst_sram_en,
 	input  wire [ 3:0] inst_sram_wen,
 	input  wire [31:0] inst_sram_addr,
@@ -38,7 +38,7 @@ module sram_to_likesram(
 	input  wire [31:0] data_sram_addr,
 	input  wire [31:0] data_sram_wdata,
 	output wire [31:0] data_sram_rdata,
-
+	//to bus
 	output wire        inst_req,
 	output wire        inst_wr,
 	output wire [1 :0] inst_size,
@@ -124,5 +124,7 @@ assign data_addr = {data_areg[31:2], data_addr_reg};
 assign data_wdata = data_data_reg;
 assign data_sram_rdata = (data_data_ok && data_sram_en && data_aok) ?data_rdata : data_dreg; 
 
-assign stall = (~|tlb_exce && ((~(inst_aok && inst_data_ok) && inst_sram_en) || (~data_data_ok && data_sram_en)))? 1'b1 : 1'b0;
+// assign stall = (~|tlb_exce && ((~(inst_aok && inst_data_ok) && inst_sram_en) || (~data_data_ok && data_sram_en)))? 1'b1 : 1'b0;
+assign stall = ((~(inst_aok && inst_data_ok) && inst_sram_en) || 
+				(~data_data_ok && data_sram_en))? 1'b1 : 1'b0;
 endmodule
