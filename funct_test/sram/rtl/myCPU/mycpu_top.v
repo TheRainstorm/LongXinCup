@@ -36,7 +36,7 @@ module mycpu_top (
     wire riD, syscallD, breakD, eretD;
     wire flush_exceptM;
 	datapath Datapath(
-		.clk(clk),.rst(~resetn),
+		.clk(~clk),.rst(~resetn),
         .int_hard(int),
 
         //control

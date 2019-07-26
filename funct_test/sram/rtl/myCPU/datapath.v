@@ -58,7 +58,8 @@ module datapath(
     wire [31:0] instrF, instrD, imm_extendD, imm_extendE, imm_extend_sl2, alu_outM, alu_outW;
     wire [4:0] rsD, rtD, rdD, rsE, rtE, rdE, rdM, rdW, write_regE, write_regM, write_regW, saD, saE;
     wire [31:0] rd1D, rd2D, rd1E, rd2E, alu_src_aE, alu_src_bE, alu_src_aE_temp, alu_src_bE_temp;
-    wire [31:0] write_dataE, write_dataM, write_dataW, read_dataW, final_write_dataM, final_addrM, final_addrW;
+    wire [31:0] write_dataE, write_dataM, write_dataW,final_write_dataM, final_addrM, final_addrW;
+    wire [32:0] read_dataM, read_dataW, final_read_dataW;
     wire [31:0] reg_write_dataW;    //select from the alu_outW, final_read_dataM and cp0_dataW
     wire [31:0] pc_control_src_a,pc_control_src_b;
     wire [5:0] op_codeD, op_codeE, op_codeM, op_codeW;
@@ -84,6 +85,10 @@ module datapath(
     //cp0 data
     wire [31:0] cp0_dataM, cp0_dataW, cp0_countM, cp0_compareM, cp0_statusM, cp0_causeM, cp0_epcM, cp0_configM, cp0_pridM, cp0_badvaddrM; 
     wire cp0_timer_intM;
+
+    //debug
+    wire [39:0] ascii;
+    wire start;
 
     //main_control
     assign reg_write_enD    = main_control[0];
@@ -125,14 +130,11 @@ module datapath(
 
     //MIPS interface
     assign PC = pcF;
-    assign Instr_en = ~stallD && ~rst && ~flush_exceptW;
+    assign Instr_en = start && ~stallF && ~flush_exceptW;
     assign Mem_addr = final_addrM ;
     assign Mem_en = mem_enM && ~flush_exceptW; //5W flush, 4M write memory will create error
     assign Mem_write_en = mem_write_enM;
     assign Write_data = final_write_dataM;
-
-    //debug
-    wire [39:0] ascii;
 
 //Fetch stage
     assign pcF = pc;
@@ -140,7 +142,8 @@ module datapath(
         .clk(clk),.en(~stallF || flush_exceptW),.rst(rst),
         .d(pc_next),
 
-        .q(pc)
+        .q(pc),
+        .start(start)
     );
     //pc_next select
     mux4 #(32) MUX4_PC(.d0(pc_plus4F),.d1(pc_branchD),.d2(pc_jumpD),.d3(pc_control_src_a),.s(pc_srcD),.y(pc_next_temp));
@@ -148,7 +151,7 @@ module datapath(
     //pc plus4F
     adder #(32) Adder_1(.carryin(1'b0),.x(pc),.y(32'd4),.s(pc_plus4F));
     //pc_errorF
-    assign pc_errorF = (pcF[1:0] == 2'b00)?1'b0:1'b1;
+    assign pc_errorF = (start && pcF[1:0] != 2'b00)?1'b1:1'b0;
     //instrF
     assign instrF = Instr;
 //Decode stage
@@ -365,6 +368,8 @@ module datapath(
         .is_in_delayslot_i    (is_in_delayslotW),
         .badvaddr_i           (badvaddrW)
     );
+    //read_dataM
+    assign read_dataM = Read_data;
 
 //Write back stage
     //input
@@ -377,6 +382,7 @@ module datapath(
     flopenrc #(32) flopenrc_MW_alu_out      (clk, ~stallW, rst, flush_exceptW, alu_outM,alu_outW);
     flopenrc #(32) flopenrc_MW_cp0data      (clk, ~stallW, rst, flush_exceptW, cp0_dataM,cp0_dataW);
     flopenrc #(5) flopenrc_MW_write_reg     (clk, ~stallW, rst, flush_exceptW, write_regM,write_regW);
+    flopenrc #(32) flopenrc_MW_read_data    (clk, ~stallW, rst, flush_exceptW, read_dataM,read_dataW);
         //CPO
     flopenrc #(1) flopenrc_MW_cp0_write_en  (clk, ~stallW, rst, flush_exceptW, cp0_write_enM ,cp0_write_enW);
     flopenrc #(5) flopenrc_MW_cp0_write_a   (clk, ~stallW, rst, flush_exceptW, rdM, rdW);
@@ -393,11 +399,11 @@ module datapath(
     rdata_process Rdata_Process(
         .op_code(op_codeW),
         .addr(final_addrW),
-        .read_data(Read_data),
+        .read_data(read_dataW),
 
-        .final_rdata(read_dataW)
+        .final_rdata(final_read_dataW)
     );
 
     //reg write data select
-    mux3 #(32) MUX_WriteData(alu_outW, read_dataW, cp0_dataW, write_srcW, reg_write_dataW);
+    mux3 #(32) MUX_WriteData(alu_outW, final_read_dataW, cp0_dataW, write_srcW, reg_write_dataW);
 endmodule
