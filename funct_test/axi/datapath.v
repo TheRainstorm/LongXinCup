@@ -302,8 +302,8 @@ module datapath(
     flopenrc #(5) flopenrc_EM_rd            (clk, ~stallM, rst, flush_exceptW, rdE,rdM);
     flopenrc #(1) flopenrc_EM_hilo          (clk, ~stallM, rst, flush_exceptW,  hilo_write_enE, hilo_write_enM);
 
-    floprc #(1) flopenrc_EM_cp0_write_en    (clk, rst, flush_exceptW || stallM, cp0_write_enE, cp0_write_enM);
-    floprc #(1) flopenrc_EM_cp0_read        (clk, rst, flush_exceptW || stallM, cp0_readE, cp0_readM);
+    flopenrc #(1) flopenrc_EM_cp0_write_en  (clk, ~stallM, rst, flush_exceptW, cp0_write_enE, cp0_write_enM);
+    flopenrc #(1) flopenrc_EM_cp0_read      (clk, ~stallM, rst, flush_exceptW, cp0_readE, cp0_readM);
     //
     flopenrc #(32) flopenrc_EM_PC           (clk, ~stallM, rst, flush_exceptW,  pcE, pcM);
     flopenrc #(1) flopenrc_EM_pc_error      (clk, ~stallM, rst, flush_exceptW,  pc_errorE, pc_errorM);
