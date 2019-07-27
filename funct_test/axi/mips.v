@@ -39,6 +39,7 @@ module mips (
 	datapath Datapath(
 		.clk(clk),.rst(rst),
         .int_hard(int),
+        .en(~stall_by_sram),
         //control
         .instrD(instrD),
         .flush_exceptM(flush_exceptM),

@@ -6,6 +6,7 @@ module alu(
 	input [63:0] hilo,
 	input [4:0] alu_control,
     input [4:0] sa,
+	input en,
 
 	output [63:0] y,
 	output overflow,
@@ -61,6 +62,7 @@ module alu(
 	div divE(// Outputs
 			.result_o                     (div_result),
 			.ready_o                      (div_ready),
+			.en	 						 (en),
 			// Inputs
 			.clk                        (clk),
 			.rst                        (rst),

@@ -36,7 +36,7 @@ module div(
 
 	input	wire										clk,
 	input wire										rst,
-	
+	input wire en,
 	input wire                    signed_div_i,
 	input wire[31:0]              opdata1_i,
 	input wire[31:0]		   				opdata2_i,
@@ -62,7 +62,7 @@ module div(
 			state <= `DivFree;
 			ready_o <= `DivResultNotReady;
 			result_o <= {`ZeroWord,`ZeroWord};
-		end else begin
+		end else if(en) begin
 		  case (state)
 		  	`DivFree:			begin               //DivFree状态
 		  		if(start_i == `DivStart && annul_i == 1'b0) begin

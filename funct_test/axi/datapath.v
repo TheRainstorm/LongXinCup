@@ -7,6 +7,7 @@
 module datapath(
     input clk,rst,
     input [5:0] int_hard,
+    input en,
     //control
     output instrD,
     output flush_exceptM,
@@ -275,6 +276,7 @@ module datapath(
         .clk(clk),.rst(rst),
         .a(alu_src_aE),.b(alu_src_bE),.hilo(alu_src_hiloE),.sa(saE),
         .alu_control(alu_controlE),
+        .en(en),
 
         .y(alu_outE),
         .overflow(overflowE),
