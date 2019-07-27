@@ -67,7 +67,7 @@ module mips (
         .Read_data(data_sram_rdata),
         //debug
         .pcW(debug_wb_pc),
-        .reg_write_enW(reg_write_enW),
+        .Reg_write_enW(reg_write_enW),
         .write_regW(debug_wb_rf_wnum),
         .reg_write_dataW(debug_wb_rf_wdata)
     );

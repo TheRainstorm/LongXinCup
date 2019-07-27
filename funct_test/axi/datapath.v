@@ -28,11 +28,10 @@ module datapath(
     input [31:0] Read_data,     
     //debug
     output [31:0] pcW,
-    output reg_write_enW,
+    output Reg_write_enW,
     output [4:0] write_regW,
     output [31:0] reg_write_dataW
     );
-
 //variable define
     // control signal
     wire [4:0] alu_controlD, alu_controlE;
@@ -58,12 +57,13 @@ module datapath(
     wire [31:0] instrF, instrD, imm_extendD, imm_extendE, imm_extend_sl2, alu_outM, alu_outW;
     wire [4:0] rsD, rtD, rdD, rsE, rtE, rdE, rdM, rdW, write_regE, write_regM, write_regW, saD, saE;
     wire [31:0] rd1D, rd2D, rd1E, rd2E, alu_src_aE, alu_src_bE, alu_src_aE_temp, alu_src_bE_temp;
-    wire [31:0] write_dataE, write_dataM, write_dataW, read_dataW, final_write_dataM, final_addrM, final_addrW;
+    wire [31:0] write_dataE, write_dataM, write_dataW, final_write_dataM, final_addrM, final_addrW;
     wire [31:0] reg_write_dataW;    //select from the alu_outW, final_read_dataM and cp0_dataW
     wire [31:0] pc_control_src_a,pc_control_src_b;
     wire [5:0] op_codeD, op_codeE, op_codeM, op_codeW;
     wire [31:0] pcD, pcE, pcM, pcW;
     wire [31:0] forward_dataM;  //select from the alu_outM and cp0_dataM
+    wire [31:0] read_dataM, read_dataW, final_read_dataW;
         //hilo
     wire [63:0] alu_outE, alu_out64M, hilo_oD, hilo_oE, alu_src_hiloE;
 
@@ -88,6 +88,8 @@ module datapath(
     //debug
     wire [39:0] ascii;
     wire start;
+
+    assign Reg_write_enW = reg_write_enW && ~stallW;
 
     //main_control
     assign reg_write_enD    = main_control[0];
@@ -129,9 +131,9 @@ module datapath(
 
     //MIPS interface
     assign PC = pcF;
-    assign Instr_en = start && ~flush_exceptW;
+    assign Instr_en = start && ~flush_exceptW && ~stallF;
     assign Mem_addr = final_addrM ;
-    assign Mem_en = mem_enM && ~flush_exceptW; //5W flush, 4M write memory will create error
+    assign Mem_en = mem_enM && ~flush_exceptW && ~stallM; //5W flush, 4M write memory will create error
     assign Mem_write_en = mem_write_enM;
     assign Write_data = final_write_dataM;
 
@@ -368,17 +370,20 @@ module datapath(
         .badvaddr_i           (badvaddrW)
     );
 
+    //read_dataM
+    assign read_dataM = Read_data;
 //Write back stage
     //input
     flopenrc #(6) flopenrc_MW_opcode        (clk, ~stallW, rst, flush_exceptW, op_codeM,op_codeW);
     flopenrc #(32) flopenrc_MW_addr         (clk, ~stallW, rst, flush_exceptW, final_addrM,final_addrW);
     wire reg_write_enW_temp;
-    floprc #(1) flopenrc_MW_reg_write       (clk, rst, flush_exceptW || stallW, reg_write_enM, reg_write_enW_temp); //write en
+    flopenrc #(1) flopenrc_MW_reg_write     (clk, ~stallW, rst, flush_exceptW, reg_write_enM,reg_write_enW_temp); //write en
     assign reg_write_enW = reg_write_enW_temp && ~flush_exceptW;
     flopenrc #(2) flopenrc_MW_write_src     (clk, ~stallW, rst, flush_exceptW, write_srcM,write_srcW);
     flopenrc #(32) flopenrc_MW_alu_out      (clk, ~stallW, rst, flush_exceptW, alu_outM,alu_outW);
     flopenrc #(32) flopenrc_MW_cp0data      (clk, ~stallW, rst, flush_exceptW, cp0_dataM,cp0_dataW);
     flopenrc #(5) flopenrc_MW_write_reg     (clk, ~stallW, rst, flush_exceptW, write_regM,write_regW);
+    flopenrc #(32) flopenrc_MW_read_data    (clk, ~stallW, rst, flush_exceptW, read_dataM,read_dataW);
         //CPO
     flopenrc #(1) flopenrc_MW_cp0_write_en  (clk, ~stallW, rst, flush_exceptW, cp0_write_enM ,cp0_write_enW);
     flopenrc #(5) flopenrc_MW_cp0_write_a   (clk, ~stallW, rst, flush_exceptW, rdM, rdW);
@@ -395,11 +400,11 @@ module datapath(
     rdata_process Rdata_Process(
         .op_code(op_codeW),
         .addr(final_addrW),
-        .read_data(Read_data),
+        .read_data(read_dataW),
 
-        .final_rdata(read_dataW)
+        .final_rdata(final_read_dataW)
     );
 
     //reg write data select
-    mux3 #(32) MUX_WriteData(alu_outW, read_dataW, cp0_dataW, write_srcW, reg_write_dataW);
+    mux3 #(32) MUX_WriteData(alu_outW, final_read_dataW, cp0_dataW, write_srcW, reg_write_dataW);
 endmodule

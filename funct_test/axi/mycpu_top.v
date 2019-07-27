@@ -128,10 +128,10 @@ mips Mips(
     wire [31:0] data_rdata  ;
     wire        data_addr_ok;
     wire        data_data_ok;
-sram_to_likesram Sram_to_Likesram(
+sram2sram_like Sram_to_Likesram(
+// sram_to_likesram Sram_to_Likesram(
     .clk(aclk), //input
     .resetn(aresetn), 
-    .tlb_exce(),
 
     .stall(stall_by_sram),  //output to mips
 
@@ -166,10 +166,9 @@ sram_to_likesram Sram_to_Likesram(
     .data_data_ok(data_data_ok)
 );
 
-likesram2axi Cpu_axi_Interface(
+cpu_axi_interface Cpu_axi_Interface(
     .clk(aclk),  //input
     .resetn(aresetn),
-    .data_sram_wen(data_sram_wen),
 
     .inst_req(inst_req), //input from sram_to_likesram
     .inst_wr(inst_wr),
