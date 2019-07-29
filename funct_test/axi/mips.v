@@ -4,13 +4,13 @@ module mips (
     input stall_by_sram,
 
     output inst_sram_en,
-    output [4:0] inst_sram_wen    ,
+    output [3:0] inst_sram_wen    ,
     output [31:0] inst_sram_addr  ,
     output [31:0] inst_sram_wdata ,
     input [31:0] inst_sram_rdata , 
 
     output data_sram_en,
-    output [4:0] data_sram_wen    ,
+    output [3:0] data_sram_wen    ,
     output [31:0] data_sram_addr  ,
     output [31:0] data_sram_wdata ,
     input [31:0] data_sram_rdata ,

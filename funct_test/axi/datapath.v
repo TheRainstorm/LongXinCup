@@ -9,7 +9,7 @@ module datapath(
     input [5:0] int_hard,
     input en,
     //control
-    output instrD,
+    output [31:0] instrD,
     output flush_exceptM,
     input [0:12] main_control,
     input [4:0] alu_control,
@@ -36,8 +36,8 @@ module datapath(
 //variable define
     // control signal
     wire [4:0] alu_controlD, alu_controlE;
-    wire reg_write_enD, alu_src_pcD, alu_src_immD, branchD, jumpD, hilo_readD, lwD, hilo_write_enD, cp0_readD, cp0_write_enD;//D
-    wire reg_write_enE, alu_src_pcE, alu_src_immE, branchE, jumpE, hilo_readE, lwE, hilo_write_enE, cp0_readE, cp0_write_enE;//E
+    wire reg_write_enD, alu_src_pcD, alu_src_immD, branchD, jumpD, hilo_readD, hilo_write_enD, cp0_readD, cp0_write_enD;//D
+    wire reg_write_enE, alu_src_pcE, alu_src_immE, branchE, jumpE, hilo_readE, hilo_write_enE, cp0_readE, cp0_write_enE;//E
     wire reg_write_enM,  hilo_write_enM, reg_write_enW,  cp0_readM, cp0_write_enM;
     wire [1:0] write_srcD, write_srcE, write_srcM, write_srcW, cp0_write_enW;
     wire [1:0] reg_dstD,reg_dstE;
@@ -54,8 +54,8 @@ module datapath(
     wire stallF, stallE, stallM, stallW;
     wire flushE;
     //data
-    wire [31:0] pc, pc_next_temp, pc_next, pcF, pc_temp, pc_plus4F, pc_plus4D, pc_plus4E, pc_branchD, pc_jumpD;
-    wire [31:0] instrF, instrD, imm_extendD, imm_extendE, imm_extend_sl2, alu_outM, alu_outW;
+    wire [31:0] pc, pc_next_temp, pc_temp, pcF, pc_next,pc_plus4F, pc_plus4D, pc_plus4E, pc_branchD, pc_jumpD;
+    wire [31:0] instrF, imm_extendD, imm_extendE, imm_extend_sl2, alu_outM, alu_outW;
     wire [4:0] rsD, rtD, rdD, rsE, rtE, rdE, rdM, rdW, write_regE, write_regM, write_regW, saD, saE;
     wire [31:0] rd1D, rd2D, rd1E, rd2E, alu_src_aE, alu_src_bE, alu_src_aE_temp, alu_src_bE_temp;
     wire [31:0] write_dataE, write_dataM, final_write_dataM, final_addrM, final_addrW;
@@ -87,7 +87,28 @@ module datapath(
 
     //debug
     wire [39:0] ascii;
-    wire start;
+
+
+   /*  ila_0 your_instance_name (
+	.clk(clk), // input wire clk
+
+
+	.probe0(ascii), // input wire [39:0]  probe0  
+	.probe1(start), // input wire [0:0]  probe1 
+	.probe2(pcF_debug), // input wire [31:0]  probe2 
+	.probe3(pc_next_debug), // input wire [31:0]  probe3 
+	.probe4(instrD_debug), // input wire [31:0]  probe4 
+	.probe5(clk_debug), // input wire [0:0]  probe5 
+	.probe6(rst_debug) // input wire [0:0]  probe6
+); */
+
+
+    assign pcF_debug = pcF;
+    assign pc_next_debug = pc_next;
+    assign instrD_debug = instrD;
+    assign clk_debug = clk;
+    assign rst_debug = rst;
+
 
     assign Reg_write_enW = reg_write_enW && ~stallW;
 
@@ -128,7 +149,7 @@ module datapath(
 
     //MIPS interface
     assign PC = pcF;
-    assign Instr_en = start && ~flush_exceptW && ~stallF;
+    assign Instr_en = ~flush_exceptW && ~stallF;
     assign Mem_addr = final_addrM ;
     assign Mem_en = mem_enM && ~flush_exceptW && ~stallM; //5W flush, 4M write memory will create error
     assign Mem_write_en = mem_write_enM;
@@ -137,19 +158,18 @@ module datapath(
 //Fetch stage
     assign pcF = pc;
     pc #(32) _PC(
-        .clk(clk),.en(start && (~stallF || flush_exceptW)),.rst(rst),
+        .clk(clk),.en((~stallF || flush_exceptW)),.rst(rst),
         .d(pc_next),
 
-        .start(start),
         .q(pc)
     );
     //pc_next select
     mux4 #(32) MUX4_PC(.d0(pc_plus4F),.d1(pc_branchD),.d2(pc_jumpD),.d3(pc_control_src_a),.s(pc_srcD),.y(pc_next_temp));
     mux2 #(32) MUX2_PC(pc_next_temp, pc_exceptW, pc_trapW, pc_next);
     //pc plus4F
-    adder #(32) Adder_1(.carryin(1'b0),.x(pc),.y(32'd4),.s(pc_plus4F));
+    assign pc_plus4F = pc + 32'd4;
     //pc_errorF
-    assign pc_errorF = (start && pcF[1:0] != 2'b00)?1'b1:1'b0;
+    assign pc_errorF = (pcF[1:0] != 2'b00)?1'b1:1'b0;
     //instrF
     assign instrF = Instr;
 //Decode stage
@@ -196,7 +216,7 @@ module datapath(
 
     //caculate pc_branchD
     sl2 #(32) SL2(imm_extendD,imm_extend_sl2);
-    adder #(32) Adder_2(.carryin(1'b0),.x(pc_plus4D),.y(imm_extend_sl2),.s(pc_branchD));
+    assign pc_branchD = pc_plus4D + imm_extend_sl2;
     //caculate pc_jumpD
     assign pc_jumpD = {pc_plus4D[31:28],instrD[25:0],2'b00};
 
@@ -245,8 +265,7 @@ module datapath(
     flopenrc #(2) flopenrc_DE_write_src     (clk, ~stallE, rst, flushE || flush_exceptW, write_srcD,write_srcE);
     flopenrc #(1) flopenrc_DE_hilo_1        (clk, ~stallE, rst, flushE || flush_exceptW, hilo_readD, hilo_readE);
     flopenrc #(1) flopenrc_DE_hilo_2        (clk, ~stallE, rst, flushE || flush_exceptW, hilo_write_enD, hilo_write_enE);
-    flopenrc #(5) flopenrc_DE_16            (clk, ~stallE, rst, flushE || flush_exceptW, alu_controlD,alu_controlE);
-    flopenrc #(1) flopenrc_DE_lw            (clk, ~stallE, rst, flushE || flush_exceptW, lwD, lwE);
+    flopenrc #(5) flopenrc_DE_alu_control   (clk, ~stallE, rst, flushE || flush_exceptW, alu_controlD,alu_controlE);
     flopenrc #(1) flopenrc_DE_cp0_write_en  (clk, ~stallE, rst, flushE || flush_exceptW, cp0_write_enD, cp0_write_enE);
     flopenrc #(1) flopenrc_DE_branch        (clk, ~stallE, rst, flushE || flush_exceptW, branchD, branchE);
     flopenrc #(1) flopenrc_DE_jump          (clk, ~stallE, rst, flushE || flush_exceptW, jumpD, jumpE);
@@ -386,7 +405,7 @@ module datapath(
         //CPO
     flopenrc #(32) flopenrc_MW_pc_except    (clk, ~stallW, rst, flush_exceptW, pc_exceptM ,pc_exceptW);
     flopenrc #(1) flopenrc_MW_pc_trap       (clk, ~stallW, rst, flush_exceptW, pc_trapM ,pc_trapW);
-    flopenrc #(5) flopenrc_MW_flush_except  (clk, ~stallW, rst, flush_exceptW, flush_exceptM ,flush_exceptW);
+    flopenrc #(1) flopenrc_MW_flush_except  (clk, ~stallW, rst, flush_exceptW, flush_exceptM ,flush_exceptW);
     flopenrc #(32) flopenrc_MW_PC           (clk, ~stallW, rst, flush_exceptW, pcM, pcW);
     //
 

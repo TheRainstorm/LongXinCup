@@ -1,7 +1,6 @@
 // global macro definition
 `define RstEnable 		1'b1
 `define RstDisable		1'b0
-`define ZeroWord		32'h00000000
 `define WriteEnable		1'b1
 `define WriteDisable	1'b0
 `define ReadEnable		1'b1

@@ -43,98 +43,98 @@ module main_decoder(
     assign eretD = (instr == `EXE_ERET)? 1:0;
 
 	always @(*) begin
-		riD = 1'b0;
+		riD <= 1'b0;
 		case(op_code)
 			`EXE_R_TYPE:
 				case(funct)
 					//HILO 有关
 					`EXE_MTHI, `EXE_MTLO:
-									main_control = 13'b0_00_0_0_00_1_1_0_0_0_0;
+									main_control <= 13'b0_00_0_0_00_1_1_0_0_0_0;
 					`EXE_MFHI, `EXE_MFLO:
-									main_control = 13'b1_01_0_0_00_1_0_0_0_0_0;
+									main_control <= 13'b1_01_0_0_00_1_0_0_0_0_0;
 					`EXE_DIV, `EXE_MULT, `EXE_DIVU, `EXE_MULTU:
-									main_control = 13'b1_01_0_0_00_0_1_0_0_0_0;
+									main_control <= 13'b1_01_0_0_00_0_1_0_0_0_0;
 					//Jump R
 					`EXE_JR: begin
 							if(instr[20:6] != 13'b0)
 							begin
-								riD = 1;
-								main_control = 13'b0_00_0_0_00_0_0_0_0_0_0;
+								riD <= 1;
+								main_control <= 13'b0_00_0_0_00_0_0_0_0_0_0;
 							end
 							else
-								main_control = 13'b0_00_0_0_00_0_0_0_0_1_0;
+								main_control <= 13'b0_00_0_0_00_0_0_0_0_1_0;
 							end
 					`EXE_JALR: begin
 							if(instr[20:16] != 5'b0 || instr[10:6] != 5'b0)
 							begin
-								riD = 1;
-								main_control = 13'b0_00_0_0_00_0_0_0_0_0_0;
+								riD <= 1;
+								main_control <= 13'b0_00_0_0_00_0_0_0_0_0_0;
 							end
 							else
-								main_control = 13'b1_01_1_0_00_0_0_0_0_1_0;
+								main_control <= 13'b1_01_1_0_00_0_0_0_0_1_0;
 							end
 					default:	//一般的R type
-	 								main_control = 13'b1_01_0_0_00_0_0_0_0_0_0;
+	 								main_control <= 13'b1_01_0_0_00_0_0_0_0_0_0;
 				endcase
 			//一般的I type
 			`EXE_ADDI, `EXE_SLTI, `EXE_ADDIU, `EXE_SLTIU: 		
-							main_control = 13'b1_00_0_1_00_0_0_0_0_0_0;
+							main_control <= 13'b1_00_0_1_00_0_0_0_0_0_0;
 			`EXE_LUI,  `EXE_ANDI, `EXE_XORI, `EXE_ORI:
-							main_control = 13'b1_00_0_1_00_0_0_0_1_0_0;
+							main_control <= 13'b1_00_0_1_00_0_0_0_1_0_0;
 			//memory
 			`EXE_LW, `EXE_LB, `EXE_LBU, `EXE_LH, `EXE_LHU:
-							main_control = 13'b1_00_0_1_01_0_0_0_0_0_0;
+							main_control <= 13'b1_00_0_1_01_0_0_0_0_0_0;
 			`EXE_SW, `EXE_SB, `EXE_SH:
-							main_control = 13'b0_00_0_1_00_0_0_0_0_0_0;
+							main_control <= 13'b0_00_0_1_00_0_0_0_0_0_0;
 			//branch and jump
 			`EXE_BEQ, `EXE_BNE:
-							main_control =  13'b0_00_0_0_00_0_0_1_0_0_0;
+							main_control <=  13'b0_00_0_0_00_0_0_1_0_0_0;
 			//BGTZ
 			`EXE_BGTZ: begin
 			 	if (rt == 5'b00000)
-					main_control = 13'b0_00_0_0_00_0_0_1_0_0_0;
+					main_control <= 13'b0_00_0_0_00_0_0_1_0_0_0;
 				else begin
 					riD <= 1;
-				  	main_control = 13'b0_00_0_0_00_0_0_0_0_0_0;
+				  	main_control <= 13'b0_00_0_0_00_0_0_0_0_0_0;
 				end
 			end
 			//BLEZ
 			`EXE_BLEZ: begin
 			 	if (rt == 5'b00000)
-					main_control = 13'b0_00_0_0_00_0_0_1_0_0_0;
+					main_control <= 13'b0_00_0_0_00_0_0_1_0_0_0;
 				else begin
 					riD <= 1;
-				  	main_control = 13'b0_00_0_0_00_0_0_0_0_0_0;
+				  	main_control <= 13'b0_00_0_0_00_0_0_0_0_0_0;
 				end
 			end
 			`EXE_BRANCHS:
 				case(rt)
 					`EXE_BLTZAL,`EXE_BGEZAL:      
-                        	main_control =  13'b1_10_1_0_00_0_0_1_0_0_0;
+                        	main_control <=  13'b1_10_1_0_00_0_0_1_0_0_0;
                     `EXE_BLTZ, `EXE_BGEZ: 
-                       		main_control =  13'b0_00_0_0_00_0_0_1_0_0_0;
+                       		main_control <=  13'b0_00_0_0_00_0_0_1_0_0_0;
                     default: begin
-							riD = 1;
-                        	main_control =  13'b0_00_0_0_00_0_0_0_0_0_0;
+							riD <= 1;
+                        	main_control <=  13'b0_00_0_0_00_0_0_0_0_0_0;
 						end
 				endcase
-			`EXE_J:			main_control =  13'b0_00_0_0_00_0_0_0_0_1_0;
-			`EXE_JAL:		main_control =  13'b1_10_1_0_00_0_0_0_0_1_0;
+			`EXE_J:			main_control <=  13'b0_00_0_0_00_0_0_0_0_1_0;
+			`EXE_JAL:		main_control <=  13'b1_10_1_0_00_0_0_0_0_1_0;
 			`EXE_MTCMFC:
 				case(rs)
 					`EXE_MFC:
-							main_control =  13'b1_00_0_0_10_0_0_0_0_0_0;
+							main_control <=  13'b1_00_0_0_10_0_0_0_0_0_0;
 					`EXE_MTC:
-							main_control =  13'b0_00_0_0_00_0_0_0_0_0_1;
+							main_control <=  13'b0_00_0_0_00_0_0_0_0_0_1;
 					default: begin
-						riD = (eretD == 1'b1)? 1'b0 : 1'b1;
-						main_control =  13'b0_00_0_0_00_0_0_0_0_0_0;
+						riD <= (eretD == 1'b1)? 1'b0 : 1'b1;
+						main_control <=  13'b0_00_0_0_00_0_0_0_0_0_0;
 					end
 				endcase
 			default: 
 				begin
-					riD = 1;
-					main_control =  13'b0_00_0_0_00_0_0_0_0_0_0;
+					riD <= 1;
+					main_control <=  13'b0_00_0_0_00_0_0_0_0_0_0;
 				end
 		endcase
 
