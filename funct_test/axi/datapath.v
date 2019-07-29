@@ -11,12 +11,12 @@ module datapath(
     //control
     output instrD,
     output flush_exceptM,
-    input [0:14] main_control,
+    input [0:12] main_control,
     input [4:0] alu_control,
     input riD, syscallD, breakD, eretD,
     //hazard
     input [0:12] hazard_control,
-    output [0:45] hazard_data,
+    output [0:46] hazard_data,
     //IM
     output [31:0] PC,           //pcF
     output Instr_en,            
@@ -58,12 +58,11 @@ module datapath(
     wire [31:0] instrF, instrD, imm_extendD, imm_extendE, imm_extend_sl2, alu_outM, alu_outW;
     wire [4:0] rsD, rtD, rdD, rsE, rtE, rdE, rdM, rdW, write_regE, write_regM, write_regW, saD, saE;
     wire [31:0] rd1D, rd2D, rd1E, rd2E, alu_src_aE, alu_src_bE, alu_src_aE_temp, alu_src_bE_temp;
-    wire [31:0] write_dataE, write_dataM, write_dataW, final_write_dataM, final_addrM, final_addrW;
+    wire [31:0] write_dataE, write_dataM, final_write_dataM, final_addrM, final_addrW;
     wire [31:0] reg_write_dataW;    //select from the alu_outW, final_read_dataM and cp0_dataW
     wire [31:0] pc_control_src_a,pc_control_src_b;
     wire [5:0] op_codeD, op_codeE, op_codeM, op_codeW;
     wire [31:0] pcD, pcE, pcM, pcW;
-    wire [31:0] forward_dataM;  //select from the alu_outM and cp0_dataM
     wire [31:0] read_dataM, read_dataW, final_read_dataW;
         //hilo
     wire [63:0] alu_outE, alu_out64M, hilo_oD, hilo_oE, alu_src_hiloE;
@@ -77,11 +76,11 @@ module datapath(
     wire overflowE, overflowM;
     wire riD, riE, riM;
     wire flush_exceptM, flush_exceptW;
-    wire [31:0] except_typeM, except_typeW;;
+    wire [31:0] except_typeM;
     wire pc_trapM, pc_trapW;
     wire [31:0] pc_exceptM, pc_exceptW; //exception process address
-    wire [31:0] badvaddrM, badvaddrW;
-    wire is_in_delayslotD, is_in_delayslotE, is_in_delayslotM, is_in_delayslotW;
+    wire [31:0] badvaddrM;
+    wire is_in_delayslotD, is_in_delayslotE, is_in_delayslotM;
     //cp0 data
     wire [31:0] cp0_dataM, cp0_dataW, cp0_countM, cp0_compareM, cp0_statusM, cp0_causeM, cp0_epcM, cp0_configM, cp0_pridM, cp0_badvaddrM; 
     wire cp0_timer_intM;
@@ -103,9 +102,7 @@ module datapath(
     assign branchD          = main_control[9];
     assign unsign_extendD   = main_control[10];
     assign jumpD            = main_control[11];
-    assign lwD              = main_control[12];
-    assign cp0_write_enD    = main_control[13];
-    assign cp0_readD        = main_control[14];
+    assign cp0_write_enD    = main_control[12];
 
     //hazard_control
     assign forwardAE        = hazard_control[0:1];
@@ -123,12 +120,11 @@ module datapath(
     //generate hazard_data
     assign hazard_data[0:34] = {rsD,rtD,rsE,rtE,write_regE, write_regM,write_regW};
     assign hazard_data[35:37] = {reg_write_enE,reg_write_enM,reg_write_enW};
-    assign hazard_data[38:39] = {write_srcE[0],write_srcM[0]};  //write_src[0] -> mem_to_reg
-    assign hazard_data[40]  = branchD;
-    assign hazard_data[41:42] = {hilo_readE, hilo_write_enM};
-    assign hazard_data[43] = div_stall;
-    assign hazard_data[44] = jumpD;
-    assign hazard_data[45] = lwE;
+    assign hazard_data[38:39] = write_srcE;  //write_src[0] -> mem_to_reg 
+    assign hazard_data[40:41] = write_srcM;  //write_src[1] -> cp0_to_reg
+    assign hazard_data[42:43] = {branchD, jumpD};
+    assign hazard_data[44:45] = {hilo_readE, hilo_write_enM};
+    assign hazard_data[46]  = div_stall;
 
     //MIPS interface
     assign PC = pcF;
@@ -205,8 +201,8 @@ module datapath(
     assign pc_jumpD = {pc_plus4D[31:28],instrD[25:0],2'b00};
 
     //pc_control
-    mux2 #(32) mux2_pc_control_src_a(rd1D,forward_dataM,forwardAD,pc_control_src_a);
-    mux2 #(32) mux2_pc_control_src_b(rd2D,forward_dataM,forwardBD,pc_control_src_b);
+    mux2 #(32) mux2_pc_control_src_a(rd1D,alu_outM,forwardAD,pc_control_src_a);
+    mux2 #(32) mux2_pc_control_src_b(rd2D,alu_outM,forwardBD,pc_control_src_b);
     pc_control PC_Control(
         .op_code(op_codeD),
         .rt(rtD),
@@ -265,9 +261,9 @@ module datapath(
     flopenrc #(1) flopenrc_DE_isdelay       (clk, ~stallE, rst, flushE || flush_exceptW, is_in_delayslotD, is_in_delayslotE);
 
     //ALU input
-    mux3 #(32) mux3_alu_src_a_forward(rd1E,reg_write_dataW,forward_dataM,forwardAE,alu_src_aE_temp);
+    mux3 #(32) mux3_alu_src_a_forward(rd1E,reg_write_dataW,alu_outM,forwardAE,alu_src_aE_temp);
     mux2 #(32) mux2_src_pc (alu_src_aE_temp, pc_plus4E, alu_src_pcE, alu_src_aE);
-    mux3 #(32) mux3_alu_src_b_forward(rd2E,reg_write_dataW,forward_dataM,forwardBE,alu_src_bE_temp);
+    mux3 #(32) mux3_alu_src_b_forward(rd2E,reg_write_dataW,alu_outM,forwardBE,alu_src_bE_temp);
     mux2 #(32) mux2_src_imm(alu_src_bE_temp, imm_extendE, alu_src_immE, alu_src_bE);
         //hilo 
     mux2 #(64) mux2_HILO(hilo_oE,alu_out64M, forward_hiloE,alu_src_hiloE);
@@ -330,7 +326,7 @@ module datapath(
     );
 
     //M stage data forward
-    mux2 #(32) forwardM(alu_outM, cp0_dataM, cp0_readM, forward_dataM);
+    //mux2 #(32) forwardM(alu_outM, cp0_dataM, cp0_readM, forward_dataM);
 
     //EXCEPTION
     exception EXCEPTION(
@@ -359,17 +355,18 @@ module datapath(
         .badvaddr_o           (cp0_badvaddrM),
         .timer_int_o          (cp0_timer_intM),
         // Inputs
-        .clk                  (~clk),   //for write
+        .clk                  (clk),   
         .rst                  (rst),
-        .we_i                 (cp0_write_enW && ~flush_exceptW),
-        .waddr_i              (rdW),          //write address
+        .we_i                 (cp0_write_enM && ~flush_exceptW && ~stallW),//for write cp0
+        .en                   (~flush_exceptW),        //for exception to change cp0
+        .waddr_i              (rdM),          //write address
         .raddr_i              (rdM),          //read address
-        .data_i               (write_dataW),  //write data
+        .data_i               (write_dataM),  //write data
         //for excptions
-        .except_type_i        (except_typeW),
-        .current_inst_addr_i  (pcW),
-        .is_in_delayslot_i    (is_in_delayslotW),
-        .badvaddr_i           (badvaddrW)
+        .except_type_i        (except_typeM),
+        .current_inst_addr_i  (pcM),
+        .is_in_delayslot_i    (is_in_delayslotM),
+        .badvaddr_i           (badvaddrM)
     );
 
     //read_dataM
@@ -387,16 +384,10 @@ module datapath(
     flopenrc #(5) flopenrc_MW_write_reg     (clk, ~stallW, rst, flush_exceptW, write_regM,write_regW);
     flopenrc #(32) flopenrc_MW_read_data    (clk, ~stallW, rst, flush_exceptW, read_dataM,read_dataW);
         //CPO
-    flopenrc #(1) flopenrc_MW_cp0_write_en  (clk, ~stallW, rst, flush_exceptW, cp0_write_enM ,cp0_write_enW);
-    flopenrc #(5) flopenrc_MW_cp0_write_a   (clk, ~stallW, rst, flush_exceptW, rdM, rdW);
-    flopenrc #(32) flopenrc_MW_cp0_write_d  (clk, ~stallW, rst, flush_exceptW, write_dataM, write_dataW);
-    flopenrc #(32) flopenrc_MW_except_type  (clk, ~stallW, rst, flush_exceptW, except_typeM ,except_typeW);
     flopenrc #(32) flopenrc_MW_pc_except    (clk, ~stallW, rst, flush_exceptW, pc_exceptM ,pc_exceptW);
     flopenrc #(1) flopenrc_MW_pc_trap       (clk, ~stallW, rst, flush_exceptW, pc_trapM ,pc_trapW);
     flopenrc #(5) flopenrc_MW_flush_except  (clk, ~stallW, rst, flush_exceptW, flush_exceptM ,flush_exceptW);
-    flopenrc #(32) flopenrc_MW_bad_v_addr   (clk, ~stallW, rst, flush_exceptW, badvaddrM ,badvaddrW);
     flopenrc #(32) flopenrc_MW_PC           (clk, ~stallW, rst, flush_exceptW, pcM, pcW);
-    flopenrc #(1) flopenrc_MW_isdelay       (clk, ~stallW, rst, flush_exceptW, is_in_delayslotM, is_in_delayslotW);
     //
 
     rdata_process Rdata_Process(

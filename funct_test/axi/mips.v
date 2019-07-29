@@ -29,10 +29,10 @@ module mips (
 
     wire reg_write_enW;
     wire [31:0] data_addr;
-    wire [0:14] main_control;
+    wire [0:12] main_control;
     wire [4:0] alu_control;
 	wire [0:12] hazard_control;
-    wire [0:45] hazard_data;
+    wire [0:46] hazard_data;
     wire [31:0] instrD;
     wire riD, syscallD, breakD, eretD;
     wire flush_exceptM;
