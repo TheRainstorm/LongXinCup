@@ -7,7 +7,7 @@ module controller(
 	input [31:0] instr,
 	input flush_exceptM,
 
-	output [0:14] main_control,
+	output [0:12] main_control,
 	output [4:0] alu_control,
 	output riD, syscallD, breakD, eretD
     );

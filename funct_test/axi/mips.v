@@ -1,6 +1,7 @@
-module mycpu_top (
-    input clk,resetn,
+module mips (
+    input clk,rst,
     input [5:0] int,
+    input stall_by_sram,
 
     output inst_sram_en,
     output [4:0] inst_sram_wen    ,
@@ -28,17 +29,17 @@ module mycpu_top (
 
     wire reg_write_enW;
     wire [31:0] data_addr;
-    wire [0:14] main_control;
+    wire [0:12] main_control;
     wire [4:0] alu_control;
 	wire [0:12] hazard_control;
-    wire [0:45] hazard_data;
+    wire [0:46] hazard_data;
     wire [31:0] instrD;
     wire riD, syscallD, breakD, eretD;
     wire flush_exceptM;
 	datapath Datapath(
-		.clk(~clk),.rst(~resetn),
+		.clk(clk),.rst(rst),
         .int_hard(int),
-
+        .en(~stall_by_sram),
         //control
         .instrD(instrD),
         .flush_exceptM(flush_exceptM),
@@ -67,7 +68,7 @@ module mycpu_top (
         .Read_data(data_sram_rdata),
         //debug
         .pcW(debug_wb_pc),
-        .reg_write_enW(reg_write_enW),
+        .Reg_write_enW(reg_write_enW),
         .write_regW(debug_wb_rf_wnum),
         .reg_write_dataW(debug_wb_rf_wdata)
     );
@@ -86,6 +87,7 @@ module mycpu_top (
 
     hazard Hazard(
         .hazard_data(hazard_data),
+        .stall_by_sram(stall_by_sram),
 
         .hazard_control(hazard_control)
     );
