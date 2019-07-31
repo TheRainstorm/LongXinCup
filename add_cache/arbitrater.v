@@ -1,4 +1,4 @@
-module sram2sram_like(
+module arbitrater(
     input  wire        clk,
     input  wire        resetn,
 
@@ -7,6 +7,18 @@ module sram2sram_like(
 
     output wire        stall,
     //to misp
+    // //to cache
+    // input  wire        inst_cache_req  ,
+    // input  wire [31:0] inst_cache_addr ,
+    // input  wire [31:0] inst_cache_rdata,
+    // output wire [31:0] inst_cache_dok  ,
+
+    // input  wire        data_cache_req  ,
+    // input  wire [ 3:0] data_cache_wen  ,
+    // input  wire [31:0] data_cache_addr ,
+    // input  wire [31:0] data_cache_wdata,
+    // output wire [31:0] data_cache_rdata,
+    // output wire        data_cache_dok   
     input  wire        inst_sram_en,
     input  wire [ 3:0] inst_sram_wen,
     input  wire [31:0] inst_sram_addr,
@@ -137,6 +149,8 @@ module sram2sram_like(
             endcase
         end
     end
+    wire inst_stall, data_stall;
+
     assign inst_stall = (state == INST || state == INST_AOK);
     assign data_stall = (state == DATA || state == DATA_AOK);
 

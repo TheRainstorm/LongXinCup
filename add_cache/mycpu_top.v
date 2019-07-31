@@ -111,6 +111,7 @@ mips Mips(
     .debug_wb_rf_wnum (debug_wb_rf_wnum ),
     .debug_wb_rf_wdata(debug_wb_rf_wdata)
 );
+    
 	wire        inst_req    ;
 	wire        inst_wr     ;
 	wire [1 :0] inst_size   ;
@@ -128,8 +129,8 @@ mips Mips(
     wire [31:0] data_rdata  ;
     wire        data_addr_ok;
     wire        data_data_ok;
-sram2sram_like Sram_to_Likesram(
-// sram_to_likesram Sram_to_Likesram(
+arbitrater ARBITRATER(
+    // sram_to_likesram Sram_to_Likesram(
     .clk(aclk), //input
     .resetn(aresetn), 
 
