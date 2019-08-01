@@ -173,3 +173,21 @@
 `define CP0_REG_PRID    5'b01111         //只读
 `define CP0_REG_CONFIG    5'b10000       //只读
 
+// 8kb cache
+    // inst_sram_addr
+    // 31:13    12:2     1:0
+    // tag      index     byte offset
+
+    // cache
+    // 51        50:32       31:0
+    // vaild     tag         inst_data
+`define IADDR_INDEX         12:2
+`define IADDR_TAG           31:13
+`define ICACHE_VAILD        51
+`define ICACHE_TAG          50:32
+`define ICACHE_DATA         31:0
+
+`define ICACHE_WIDTH        51:0
+`define ICACHE_DATA_WIDTH   31:0
+`define ICACHE_TAG_WIDTH    18:0
+`define ICACHE_INDEX_WIDTH  10:0

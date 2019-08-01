@@ -1,3 +1,5 @@
+`include "defines.vh"
+
 module instr_cache(
     input   wire        clk,
     input   wire        resetn,
@@ -13,27 +15,26 @@ module instr_cache(
     input   wire [31:0] inst_cache_rdata,
     input   wire        inst_cache_dok
 );
-    // 4kb cache
+    // 8kb cache
     // inst_sram_addr
-    // 31:12    11:2     1:0
+    // 31:13    12:2     1:0
     // tag      index     byte offset
 
     // cache
-    // 52        51:32       31:0
+    // 51        50:32       31:0
     // vaild     tag         inst_data
-
     // data divide
-    wire [52:0] cache;
+    wire [`ICACHE_WIDTH] cache;
     wire cache_vaild;
-    wire [19:0] cache_tag, addr_tag;
-    wire [31:0] cache_data;
-    wire [9:0] addr_index;
+    wire [`ICACHE_TAG_WIDTH] cache_tag, addr_tag;
+    wire [`ICACHE_DATA_WIDTH] cache_data;
+    wire [`ICACHE_INDEX_WIDTH] addr_index;
 
-    assign cache_vaild      = cache[52];
-    assign cache_tag        = cache[51:32];
-    assign cache_data       = cache[31:0];
-    assign addr_tag         = inst_sram_addr[31:12];
-    assign addr_index       = inst_sram_addr[11:2];
+    assign cache_vaild      = cache[`ICACHE_VAILD];
+    assign cache_tag        = cache[`ICACHE_TAG];
+    assign cache_data       = cache[`ICACHE_DATA_WIDTH];
+    assign addr_tag         = inst_sram_addr[`IADDR_TAG];
+    assign addr_index       = inst_sram_addr[`IADDR_INDEX];
     //
     wire hit;
 
@@ -48,7 +49,7 @@ module instr_cache(
 
 
     //CACHE
-    wire [52:0] i_cache_write_data;
+    wire [`ICACHE_WIDTH] i_cache_write_data;
     wire i_cache_write_en;
     assign i_cache_write_data  = {1'b1, addr_tag ,inst_cache_rdata};
     assign i_cache_write_en = inst_cache_dok;
