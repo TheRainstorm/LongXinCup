@@ -22,12 +22,10 @@ module data_cache(
     assign data_sram_rdata = data_cache_rdata;
 
     //output to arbitrater
-    wire data_addr_exception;
-    assign data_addr_exception          = (data_sram_addr[1:0]!=2'b00);
     assign data_cache_addr              = data_sram_addr    ;
     assign data_cache_wen               = data_sram_wen     ;
     assign data_cache_wdata             = data_sram_wdata   ;
         //REQUEST
-    assign data_cache_req               = ~data_addr_exception && ~hit && data_sram_en;
+    assign data_cache_req               = ~hit && data_sram_en;
 
 endmodule

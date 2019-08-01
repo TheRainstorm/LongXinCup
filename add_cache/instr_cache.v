@@ -42,11 +42,9 @@ module instr_cache(
     assign inst_sram_rdata = hit ? cache_data : inst_cache_rdata;
 
     //output to arbitrater
-    wire inst_addr_exception;
-    assign inst_addr_exception          = (inst_sram_addr[1:0]!=2'b00);
     assign inst_cache_addr              = inst_sram_addr;
         //REQUEST
-    assign inst_cache_req               = ~inst_addr_exception && ~hit && inst_sram_en;
+    assign inst_cache_req               = ~hit && inst_sram_en;
 
 
     //CACHE

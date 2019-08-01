@@ -155,7 +155,7 @@ module arbitrater(
     assign data_stall = (state == DATA || state == DATA_AOK);
     assign stall = inst_stall || data_stall;
 
-    assign inst_req = (state == INST);
-    assign data_req = (state == DATA);
+    assign inst_req = ~inst_addr_exception && (state == INST);
+    assign data_req = ~data_addr_exception && (state == DATA);
 
 endmodule
