@@ -1,1 +1,0 @@
-longXin Cup
