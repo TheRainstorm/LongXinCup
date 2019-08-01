@@ -74,79 +74,126 @@ module mycpu_top(
     output wire[31:0] debug_wb_rf_wdata
 );
 
-//cpu inst sram
-wire        cpu_inst_en;
-wire [3 :0] cpu_inst_wen;
-wire [31:0] cpu_inst_addr;
-wire [31:0] cpu_inst_wdata;
-wire [31:0] cpu_inst_rdata;
-//cpu data sram
-wire        cpu_data_en;
-wire [3 :0] cpu_data_wen;
-wire [31:0] cpu_data_addr;
-wire [31:0] cpu_data_wdata;
-wire [31:0] cpu_data_rdata;
+//mips to cache
+wire    stall_by_sram           ;
+wire    inst_sram_en            ;
+wire    [3:0] inst_sram_wen     ;
+wire    [31:0] inst_sram_addr   ;
+wire    [31:0] inst_sram_wdata  ;
+wire    [31:0] inst_sram_rdata  ;
 
-wire stall_by_sram;
+wire    data_sram_en            ;  
+wire    [3:0] data_sram_wen     ;
+wire    [31:0] data_sram_addr   ;
+wire    [31:0] data_sram_wdata  ;
+wire    [31:0] data_sram_rdata  ;
+
+
 mips Mips(
     .clk(~aclk),.rst(~aresetn),
     .int(int),
     .stall_by_sram(stall_by_sram),      //input
 
-    .inst_sram_en     (cpu_inst_en   ),
-    .inst_sram_wen    (cpu_inst_wen  ),
-    .inst_sram_addr   (cpu_inst_addr ),
-    .inst_sram_wdata  (cpu_inst_wdata),
-    .inst_sram_rdata  (cpu_inst_rdata),     //input
+    //to cache
+    .inst_sram_en     (inst_sram_en         ),
+    .inst_sram_wen    (),
+    .inst_sram_addr   (inst_sram_addr       ),
+    .inst_sram_wdata  (),
+    .inst_sram_rdata  (inst_sram_rdata      ),     //input
     
-    .data_sram_en     (cpu_data_en   ),
-    .data_sram_wen    (cpu_data_wen  ),
-    .data_sram_addr   (cpu_data_addr ),
-    .data_sram_wdata  (cpu_data_wdata),
-    .data_sram_rdata  (cpu_data_rdata),     //input
+    .data_sram_en     (data_sram_en         ),
+    .data_sram_wen    (data_sram_wen        ),
+    .data_sram_addr   (data_sram_addr       ),
+    .data_sram_wdata  (data_sram_wdata      ),
+    .data_sram_rdata  (data_sram_rdata      ),     //input
 
     //debug
-    .debug_wb_pc      (debug_wb_pc      ),
-    .debug_wb_rf_wen  (debug_wb_rf_wen  ),
-    .debug_wb_rf_wnum (debug_wb_rf_wnum ),
-    .debug_wb_rf_wdata(debug_wb_rf_wdata)
+    .debug_wb_pc      (debug_wb_pc          ),
+    .debug_wb_rf_wen  (debug_wb_rf_wen      ),
+    .debug_wb_rf_wnum (debug_wb_rf_wnum     ),
+    .debug_wb_rf_wdata(debug_wb_rf_wdata    )
 );
-    
-	wire        inst_req    ;
-	wire        inst_wr     ;
-	wire [1 :0] inst_size   ;
-	wire [31:0] inst_addr   ;
-	wire [31:0] inst_wdata  ;
-    wire [31:0] inst_rdata  ;
-    wire        inst_addr_ok;
-    wire        inst_data_ok;
 
-    wire        data_req    ;
-    wire        data_wr     ;
-    wire [1 :0] data_size   ;
-    wire [31:0] data_addr   ;
-	wire [31:0] data_wdata  ;  
-    wire [31:0] data_rdata  ;
-    wire        data_addr_ok;
-    wire        data_data_ok;
+//cache to arbitrater
+wire    stall_by_arbitrater  ;
+wire        inst_cache_req  ;
+wire [31:0] inst_cache_addr ;
+wire [31:0] inst_cache_rdata;
+wire        inst_cache_dok  ;
+
+wire        data_cache_req  ;
+wire [ 3:0] data_cache_wen  ;
+wire [31:0] data_cache_addr ;
+wire [31:0] data_cache_wdata;
+wire [31:0] data_cache_rdata;
+wire        data_cache_dok  ;
+
+cache CACHE(
+    .clk(~aclk), .resetn(aresetn),
+    .stall(stall_by_sram),
+    //to mips
+    .inst_sram_en       (inst_sram_en    ),
+    .inst_sram_addr     (inst_sram_addr  ),
+    .inst_sram_rdata    (inst_sram_rdata ),
+
+    .data_sram_en       (data_sram_en    ),
+    .data_sram_wen      (data_sram_wen   ),
+    .data_sram_addr     (data_sram_addr  ),
+    .data_sram_wdata    (data_sram_wdata ),
+    .data_sram_rdata    (data_sram_rdata ),
+
+    //to arbitrater
+    .stall_by_arbitrater(stall_by_arbitrater),
+
+    .inst_cache_req     (inst_cache_req  ),
+    .inst_cache_addr    (inst_cache_addr ),
+    .inst_cache_rdata   (inst_cache_rdata),
+    .inst_cache_dok     (inst_cache_dok  ),
+    
+    .data_cache_req     (data_cache_req  ),
+    .data_cache_wen     (data_cache_wen  ),
+    .data_cache_addr    (data_cache_addr ),
+    .data_cache_wdata   (data_cache_wdata),
+    .data_cache_rdata   (data_cache_rdata),
+    .data_cache_dok     (data_cache_dok  )
+);
+
+//arbitrater to bus
+wire        inst_req    ;
+wire        inst_wr     ;
+wire [1 :0] inst_size   ;
+wire [31:0] inst_addr   ;
+wire [31:0] inst_wdata  ;
+wire [31:0] inst_rdata  ;
+wire        inst_addr_ok;
+wire        inst_data_ok;
+
+wire        data_req    ;
+wire        data_wr     ;
+wire [1 :0] data_size   ;
+wire [31:0] data_addr   ;
+wire [31:0] data_wdata  ;  
+wire [31:0] data_rdata  ;
+wire        data_addr_ok;
+wire        data_data_ok;
+
 arbitrater ARBITRATER(
-    // sram_to_likesram Sram_to_Likesram(
-    .clk(aclk), //input
+    .clk(aclk),
     .resetn(aresetn), 
 
-    .stall(stall_by_sram),  //output to mips
+    .stall(stall_by_arbitrater),
+    //to cache
+    .inst_cache_req     (inst_cache_req  ),
+    .inst_cache_addr    (inst_cache_addr ),
+    .inst_cache_rdata   (inst_cache_rdata),
+    .inst_cache_dok     (inst_cache_dok  ),
 
-    .inst_sram_en     (cpu_inst_en   ),
-    .inst_sram_wen    (cpu_inst_wen  ),
-    .inst_sram_addr   (cpu_inst_addr ),
-    .inst_sram_wdata  (cpu_inst_wdata),
-    .inst_sram_rdata  (cpu_inst_rdata),
-    
-    .data_sram_en     (cpu_data_en   ),
-    .data_sram_wen    (cpu_data_wen  ),
-    .data_sram_addr   (cpu_data_addr ),
-    .data_sram_wdata  (cpu_data_wdata),
-    .data_sram_rdata  (cpu_data_rdata),
+    .data_cache_req     (data_cache_req  ),
+    .data_cache_wen     (data_cache_wen  ),
+    .data_cache_addr    (data_cache_addr ),
+    .data_cache_wdata   (data_cache_wdata),
+    .data_cache_rdata   (data_cache_rdata),
+    .data_cache_dok     (data_cache_dok  ),
 
     .inst_req(inst_req), //output to axi_cpu_interface
     .inst_wr(inst_wr),

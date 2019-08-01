@@ -2,7 +2,7 @@ module mips (
     input clk,rst,
     input [5:0] int,
     input stall_by_sram,
-
+    //to cache
     output inst_sram_en,
     output [3:0] inst_sram_wen    ,
     output [31:0] inst_sram_addr  ,
@@ -13,7 +13,7 @@ module mips (
     output [3:0] data_sram_wen    ,
     output [31:0] data_sram_addr  ,
     output [31:0] data_sram_wdata ,
-    input [31:0] data_sram_rdata ,
+    input [31:0] data_sram_rdata  ,
 
     //debug
     output [31:0] debug_wb_pc      ,

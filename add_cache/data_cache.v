@@ -2,7 +2,6 @@ module data_cache(
     input   wire        clk,
     input   wire        resetn,
 
-    output  wire        d_stall,
     //misp
     input   wire        data_sram_en    ,
     input   wire [3:0]  data_sram_wen   ,
@@ -31,7 +30,4 @@ module data_cache(
         //REQUEST
     assign data_cache_req               = ~data_addr_exception && ~hit && data_sram_en;
 
-
-    //STALL
-    assign d_stall = ~hit && ~data_cache_dok;
 endmodule

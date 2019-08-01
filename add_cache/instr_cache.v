@@ -2,8 +2,7 @@ module instr_cache(
     input   wire        clk,
     input   wire        resetn,
 
-    output  wire        i_stall,
-    //misp
+    //mips
     input   wire        inst_sram_en    ,
     input   wire [31:0] inst_sram_addr  ,
     output  wire [31:0] inst_sram_rdata ,
@@ -50,15 +49,11 @@ module instr_cache(
     assign inst_cache_req               = ~inst_addr_exception && ~hit && inst_sram_en;
 
 
-    //STALL
-    assign i_stall = ~hit && ~inst_cache_dok;
-
-
     //CACHE
     wire [52:0] i_cache_write_data;
     wire i_cache_write_en;
     assign i_cache_write_data  = {1'b1, addr_tag ,inst_cache_rdata};
-    assign i_cache_write_en = ~hit && inst_cache_dok;
+    assign i_cache_write_en = inst_cache_dok;
     i_cache I_CACHE (
         .a      (addr_index),               // input wire [9 : 0] a
         .d      (i_cache_write_data),       // input wire [52 : 0] d

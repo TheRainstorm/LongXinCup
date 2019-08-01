@@ -103,11 +103,11 @@ module datapath(
 ); */
 
 
-    assign pcF_debug = pcF;
-    assign pc_next_debug = pc_next;
-    assign instrD_debug = instrD;
-    assign clk_debug = clk;
-    assign rst_debug = rst;
+    // assign pcF_debug = pcF;
+    // assign pc_next_debug = pc_next;
+    // assign instrD_debug = instrD;
+    // assign clk_debug = clk;
+    // assign rst_debug = rst;
 
 
     assign Reg_write_enW = reg_write_enW && ~stallW;
@@ -149,7 +149,7 @@ module datapath(
 
     //MIPS interface
     assign PC = pcF;
-    assign Instr_en = ~flush_exceptW && ~stallF;
+    assign Instr_en = ~rst && ~flush_exceptW && ~stallF;
     assign Mem_addr = final_addrM ;
     assign Mem_en = mem_enM && ~flush_exceptW && ~stallM; //5W flush, 4M write memory will create error
     assign Mem_write_en = mem_write_enM;
