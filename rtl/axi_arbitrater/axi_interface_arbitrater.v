@@ -60,12 +60,12 @@ module cpu_axi_interface
     
     output        stall,
     //inst sram-like 
-    input         inst_req     ,//cpu input to cpu_axi_interface
+    input         inst_req     ,
     input         inst_wr      ,
     input  [1 :0] inst_size    ,
     input  [31:0] inst_addr    ,
     input  [31:0] inst_wdata   ,
-    output [31:0] inst_rdata   ,//cpu_axi_interface to cpu 
+    output [31:0] inst_rdata   ,
     output        inst_addr_ok ,
     output        inst_data_ok ,
     
@@ -144,7 +144,7 @@ always @(posedge clk) begin
                 else if(inst_req) begin
                     state <= INST;
                 end
-                else begin
+                else if(data_req) begin
                     state <= DATA;
                 end
             end

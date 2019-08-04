@@ -36,17 +36,31 @@ module data_cache(
     assign addr_tag         = data_sram_addr[`DADDR_TAG];
     assign addr_index       = data_sram_addr[`DADDR_INDEX];
 
+    //hit judge
     wire hit;
-
     assign hit = cache_vaild && (addr_tag == cache_tag);
 
+    //outer address
     wire exclude_addr;
     assign exclude_addr = (data_sram_addr[31:16] == 16'h1faf) ? 1'b1 : 1'b0;
 
-    assign data_sram_rdata = hit ? cache_data : data_cache_rdata;
-
+    //return data
+    reg [31:0] data_cache_rdata_save;
+    // reg hit_save;
+    always @(posedge clk) begin
+        if(~resetn) begin
+            data_cache_rdata_save <= 32'b0;
+        end
+        else begin
+            if(data_cache_dok) begin
+                data_cache_rdata_save <= data_cache_rdata;
+            end
+        end
+    end
+    assign data_sram_rdata = hit && ~exclude_addr? cache_data : data_cache_rdata_save;
+    //REQUEST
     assign data_cache_req = (~hit && data_sram_en) || (|data_sram_wen && data_sram_en);
-
+    //req write data
     wire [31:0] data_sram_mask, data_sram_wdata_masked;
     assign data_sram_mask = { {8{data_sram_wen[3]}}, {8{data_sram_wen[2]}}, {8{data_sram_wen[1]}}, {8{data_sram_wen[0]}} };
     assign data_sram_wdata_masked = (data_sram_mask & data_sram_wdata) | (~data_sram_mask & cache_data);

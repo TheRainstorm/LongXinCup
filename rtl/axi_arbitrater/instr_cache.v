@@ -40,8 +40,22 @@ module instr_cache(
 
     //HIT judge
     assign hit = cache_vaild && (cache_tag == addr_tag);
-    assign inst_sram_rdata = hit ? cache_data : inst_cache_rdata;
-
+    //return data
+    reg [31:0] inst_cache_rdata_save;
+    reg hit_save;
+    always @(posedge clk) begin
+        if(~resetn) begin
+            inst_cache_rdata_save <= 32'b0;
+            hit_save <= 1'b0;
+        end
+        else begin
+            if(inst_cache_dok) begin
+                inst_cache_rdata_save <= inst_cache_rdata;
+            end
+        end
+    end
+    assign inst_sram_rdata = hit ? cache_data : inst_cache_rdata_save;
+    
     //output to arbitrater
     assign inst_cache_addr              = inst_sram_addr;
         //REQUEST
