@@ -144,34 +144,34 @@
 `define DivStop 1'b0
 
 //Exception code
-`define EXC_CODE_INT        5'h00      //涓柇
-`define EXC_CODE_ADEL       5'h04      //鍦板潃閿欎緥澶栵紙璇绘暟鎹垨鍙栨寚浠わ級
-`define EXC_CODE_ADES       5'h05      //鍦板潃閿欎緥澶栵紙鍐欐暟鎹級
-`define EXC_CODE_SYS        5'h08      //绯荤粺璋冪敤渚嬪銆? 
-`define EXC_CODE_BP         5'h09      //鏂偣渚嬪銆?
-`define EXC_CODE_RI         5'h0a      //淇濈暀鎸囦护渚嬪銆?
-`define EXC_CODE_OV         5'h0c      //绠楀嚭婧㈠嚭渚嬪銆?
+`define EXC_CODE_INT        5'h00      //娑擃厽鏌?
+`define EXC_CODE_ADEL       5'h04      //閸︽澘娼冮柨娆庣伐婢舵牭绱欑拠缁樻殶閹诡喗鍨ㄩ崣鏍ㄥ瘹娴犮倧绱?
+`define EXC_CODE_ADES       5'h05      //閸︽澘娼冮柨娆庣伐婢舵牭绱欓崘娆愭殶閹诡噯绱?
+`define EXC_CODE_SYS        5'h08      //缁崵绮虹拫鍐暏娓氬顦婚妴? 
+`define EXC_CODE_BP         5'h09      //閺傤厾鍋ｆ笟瀣樆閵??
+`define EXC_CODE_RI         5'h0a      //娣囨繄鏆?閹稿洣鎶ゆ笟瀣樆閵??
+`define EXC_CODE_OV         5'h0c      //缁犳鍤┃銏犲毉娓氬顦婚妴?
 
 //Exception type
-`define EXC_TYPE_INT        32'h0000_0001      //涓柇
-`define EXC_TYPE_ADEL       32'h0000_0004      //鍦板潃閿欎緥澶栵紙璇绘暟鎹垨鍙栨寚浠わ級
-`define EXC_TYPE_ADES       32'h0000_0005      //鍦板潃閿欎緥澶栵紙鍐欐暟鎹級
-`define EXC_TYPE_SYS        32'h0000_0008      //绯荤粺璋冪敤渚嬪銆? 
-`define EXC_TYPE_BP         32'h0000_0009      //鏂偣渚嬪銆?
-`define EXC_TYPE_RI         32'h0000_000a      //淇濈暀鎸囦护渚嬪銆?
-`define EXC_TYPE_OV         32'h0000_000c      //绠楀嚭婧㈠嚭渚嬪銆?
-`define EXC_TYPE_ERET       32'h0000_000e      //寮傚父杩斿洖鈥滀緥澶栤?? 
+`define EXC_TYPE_INT        32'h0000_0001      //娑擃厽鏌?
+`define EXC_TYPE_ADEL       32'h0000_0004      //閸︽澘娼冮柨娆庣伐婢舵牭绱欑拠缁樻殶閹诡喗鍨ㄩ崣鏍ㄥ瘹娴犮倧绱?
+`define EXC_TYPE_ADES       32'h0000_0005      //閸︽澘娼冮柨娆庣伐婢舵牭绱欓崘娆愭殶閹诡噯绱?
+`define EXC_TYPE_SYS        32'h0000_0008      //缁崵绮虹拫鍐暏娓氬顦婚妴? 
+`define EXC_TYPE_BP         32'h0000_0009      //閺傤厾鍋ｆ笟瀣樆閵??
+`define EXC_TYPE_RI         32'h0000_000a      //娣囨繄鏆?閹稿洣鎶ゆ笟瀣樆閵??
+`define EXC_TYPE_OV         32'h0000_000c      //缁犳鍤┃銏犲毉娓氬顦婚妴?
+`define EXC_TYPE_ERET       32'h0000_000e      //瀵倸鐖舵潻鏂挎礀閳ユ粈绶ユ径鏍??? 
 `define EXC_TYPE_NOEXC      32'h0000_0000
 
 //CP0
-`define CP0_REG_BADVADDR    5'b01000       //鍙
-`define CP0_REG_COUNT    5'b01001        //鍙鍐?
-`define CP0_REG_COMPARE    5'b01011      //鍙鍐?
-`define CP0_REG_STATUS    5'b01100       //鍙鍐?
-`define CP0_REG_CAUSE    5'b01101        //鍙
-`define CP0_REG_EPC    5'b01110          //鍙鍐?
-`define CP0_REG_PRID    5'b01111         //鍙
-`define CP0_REG_CONFIG    5'b10000       //鍙
+`define CP0_REG_BADVADDR    5'b01000       //閸欘亣顕?
+`define CP0_REG_COUNT    5'b01001        //閸欘垵顕伴崘?
+`define CP0_REG_COMPARE    5'b01011      //閸欘垵顕伴崘?
+`define CP0_REG_STATUS    5'b01100       //閸欘垵顕伴崘?
+`define CP0_REG_CAUSE    5'b01101        //閸欘亣顕?
+`define CP0_REG_EPC    5'b01110          //閸欘垵顕伴崘?
+`define CP0_REG_PRID    5'b01111         //閸欘亣顕?
+`define CP0_REG_CONFIG    5'b10000       //閸欘亣顕?
 
 // 8kb cache
     // inst_sram_addr
@@ -181,16 +181,16 @@
     // cache
     // 51        50:32       31:0
     // vaild     tag         inst_data
-`define IADDR_INDEX         15:2
-`define IADDR_TAG           31:16
-`define ICACHE_VAILD        48
-`define ICACHE_TAG          47:32
+`define IADDR_INDEX         12:2
+`define IADDR_TAG           31:13
+`define ICACHE_VAILD        51
+`define ICACHE_TAG          50:32
 `define ICACHE_DATA         31:0
 
-`define ICACHE_WIDTH        48:0
+`define ICACHE_WIDTH        51:0
 `define ICACHE_DATA_WIDTH   31:0
-`define ICACHE_TAG_WIDTH    15:0
-`define ICACHE_INDEX_WIDTH  13:0
+`define ICACHE_TAG_WIDTH    18:0
+`define ICACHE_INDEX_WIDTH  10:0
 
 // 8kb cache
     // data_sram_addr
@@ -200,13 +200,13 @@
     // cache
     // 51        50:32       31:0
     // vaild     tag         data_data
-`define DADDR_INDEX         15:2
-`define DADDR_TAG           31:16
-`define DCACHE_VAILD        48
-`define DCACHE_TAG          47:32
+`define DADDR_INDEX         12:2
+`define DADDR_TAG           31:13
+`define DCACHE_VAILD        51
+`define DCACHE_TAG          50:32
 `define DCACHE_DATA         31:0
 
-`define DCACHE_WIDTH        48:0
+`define DCACHE_WIDTH        51:0
 `define DCACHE_DATA_WIDTH   31:0
-`define DCACHE_TAG_WIDTH    15:0
-`define DCACHE_INDEX_WIDTH  13:0
+`define DCACHE_TAG_WIDTH    18:0
+`define DCACHE_INDEX_WIDTH  10:0

@@ -57,7 +57,20 @@ module data_cache(
             end
         end
     end
-    assign data_sram_rdata = hit && ~exclude_addr? cache_data : data_cache_rdata_save;
+    wire clk_n;
+    assign clk_n = ~clk;
+    reg hit_save;
+    always @(posedge clk_n) begin
+        if(~resetn) begin
+            hit_save <= 1'b0;
+        end
+        else begin
+            if(data_sram_en) begin
+                hit_save <= hit;
+            end
+        end
+    end
+    assign data_sram_rdata = hit_save && ~exclude_addr? cache_data : data_cache_rdata_save;
     //REQUEST
     assign data_cache_req = (~hit && data_sram_en) || (|data_sram_wen && data_sram_en);
     //req write data

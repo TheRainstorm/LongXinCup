@@ -209,7 +209,7 @@ reg [31:0] do_addr_r;
 reg [31:0] do_wdata_r;
 wire data_back;
 
-assign inst_addr_ok = !do_req&&!data_req;   //不含仲裁，表示会在两个请求中选择data_req处理。
+assign inst_addr_ok = !do_req&&!data_req;   //不含仲裁，表示会在两个请求中选择data_req处理�?
 assign data_addr_ok = !do_req;
 always @(posedge clk)
 begin
