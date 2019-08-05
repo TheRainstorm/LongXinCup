@@ -112,7 +112,7 @@ module data_cache(
     assign data_cache_req = (state == LM || state == WB) ? 1'b1 : 1'b0;  //LOAD MEM means to load data from mem, WRITE BACK means to write the mem
     //data req address
     assign data_cache_addr = (state == LM)? data_sram_addr :
-                            (state == WB)? {cache_tag, addr_index, data_sram_addr[1:0]}:     //cache_tag + index + byteoffset
+                            (state == WB)? (exclude_addr ? data_sram_addr : {cache_tag, addr_index, data_sram_addr[1:0]} ):     //cache_tag + index + byteoffset
                                                 32'b0;
     //data req wr
     assign data_cache_wr = (state == WB)? 1'b1 : 1'b0;
