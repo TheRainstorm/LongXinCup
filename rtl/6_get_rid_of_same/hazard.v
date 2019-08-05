@@ -1,6 +1,6 @@
 module hazard(
     input [0:46] hazard_data,
-    input stall_by_sram,
+    input stall_from_cache,
     output [0:12] hazard_control
 );
 //1 数据定义
@@ -90,11 +90,11 @@ module hazard(
                     ( mem_to_regM && write_regM==rsD ) ||
                     ( cp0_to_regM && write_regM==rsD )
                   );
-    assign flushE = (lwstall || branchstall || jumpstall || mfcp0stall) && ~stall_by_sram;     //
-    assign stallF = lwstall || branchstall || divstall ||jumpstall || mfcp0stall ||stall_by_sram;
-    assign stallD = lwstall || branchstall || divstall ||jumpstall || mfcp0stall || stall_by_sram;
-    assign stallE = divstall || stall_by_sram;
-    assign stallM = divstall || stall_by_sram;
-    assign stallW = divstall || stall_by_sram;
+    assign flushE = (lwstall || branchstall || jumpstall || mfcp0stall) && ~stall_from_cache;     //
+    assign stallF = lwstall || branchstall || divstall ||jumpstall || mfcp0stall ||stall_from_cache;
+    assign stallD = lwstall || branchstall || divstall ||jumpstall || mfcp0stall || stall_from_cache;
+    assign stallE = divstall || stall_from_cache;
+    assign stallM = divstall || stall_from_cache;
+    assign stallW = divstall || stall_from_cache;
 
 endmodule

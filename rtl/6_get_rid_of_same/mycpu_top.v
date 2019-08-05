@@ -91,7 +91,7 @@ wire    [31:0] data_sram_rdata  ;
 mips Mips(
     .clk(~aclk),.rst(~aresetn),
     .int(int),
-    .stall_by_sram(stall_from_cache),      //input
+    .stall_from_cache(stall_from_cache),      //input
 
     //to cache
     .inst_sram_en     (inst_sram_en         ),

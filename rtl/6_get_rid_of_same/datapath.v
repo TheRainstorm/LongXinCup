@@ -7,7 +7,7 @@
 module datapath(
     input clk,rst,
     input [5:0] int_hard,
-    input en,
+    input stall_from_cache,
     //control
     output [31:0] instrD,
     output flush_exceptM,
@@ -200,11 +200,11 @@ module datapath(
     assign rdD = instrD[15:11];
     assign saD = instrD[10:6];
 
-    //debug
-    instdec instdec1(
-        .instr(instrD),
-        .ascii(ascii)
-    );
+    // //debug
+    // instdec instdec1(
+    //     .instr(instrD),
+    //     .ascii(ascii)
+    // );
 
     //immediate number extend
     extend Extend(
@@ -291,7 +291,7 @@ module datapath(
         .clk(clk),.rst(rst),
         .a(alu_src_aE),.b(alu_src_bE),.hilo(alu_src_hiloE),.sa(saE),
         .alu_control(alu_controlE),
-        .en(en),
+        .en(stall_from_cache),
 
         .y(alu_outE),
         .overflow(overflowE),

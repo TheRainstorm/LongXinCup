@@ -118,33 +118,23 @@ module cp0_reg(
       end
    end
 
-   // //read
-   // always @(*) begin
-   //    if(rst) 
-   //       data_o <= `ZeroWord;
-   //    else begin 
-   //       case (raddr_i)
-   //         `CP0_REG_COUNT:    data_o <= count_o;
-   //         `CP0_REG_COMPARE:  data_o <= compare_o;
-   //         `CP0_REG_STATUS:   data_o <= status_o;
-   //         `CP0_REG_CAUSE:    data_o <= cause_o;
-   //         `CP0_REG_EPC:      data_o <= epc_o;
-   //         `CP0_REG_PRID:     data_o <= prid_o;
-   //         `CP0_REG_CONFIG:   data_o <= config_o;
-   //         `CP0_REG_BADVADDR: data_o <= badvaddr_o;
-   //          default :         data_o <= `ZeroWord;
-   //       endcase
-   //    end
-   // end
-   
-   assign data_o =   rst  ?  `ZeroWord :
-                     (raddr_i == `CP0_REG_COUNT) ?    count_o     :  
-                     (raddr_i == `CP0_REG_COMPARE) ?  compare_o   :
-                     (raddr_i == `CP0_REG_STATUS) ?   status_o    :
-                     (raddr_i == `CP0_REG_CAUSE) ?    cause_o     :
-                     (raddr_i == `CP0_REG_EPC) ?      epc_o       :
-                     (raddr_i == `CP0_REG_PRID) ?     prid_o      :
-                     (raddr_i == `CP0_REG_CONFIG) ?   config_o    :
-                     (raddr_i == `CP0_REG_BADVADDR) ? badvaddr_o  : `ZeroWord;
+   //read
+   always @(*) begin
+      if(rst) 
+         data_o <= `ZeroWord;
+      else begin 
+         case (raddr_i)
+           `CP0_REG_COUNT:    data_o <= count_o;
+           `CP0_REG_COMPARE:  data_o <= compare_o;
+           `CP0_REG_STATUS:   data_o <= status_o;
+           `CP0_REG_CAUSE:    data_o <= cause_o;
+           `CP0_REG_EPC:      data_o <= epc_o;
+           `CP0_REG_PRID:     data_o <= prid_o;
+           `CP0_REG_CONFIG:   data_o <= config_o;
+           `CP0_REG_BADVADDR: data_o <= badvaddr_o;
+            default :         data_o <= `ZeroWord;
+         endcase
+      end
+   end
 
 endmodule

@@ -1,7 +1,7 @@
 module mips (
     input clk,rst,
     input [5:0] int,
-    input stall_by_sram,
+    input stall_from_cache,
     //to cache
     output inst_sram_en,
     output [3:0] inst_sram_wen    ,
@@ -39,7 +39,7 @@ module mips (
 	datapath Datapath(
 		.clk(clk),.rst(rst),
         .int_hard(int),
-        .en(~stall_by_sram),
+        .stall_from_cache(~stall_from_cache),
         //control
         .instrD(instrD),
         .flush_exceptM(flush_exceptM),
@@ -87,7 +87,7 @@ module mips (
 
     hazard Hazard(
         .hazard_data(hazard_data),
-        .stall_by_sram(stall_by_sram),
+        .stall_from_cache(stall_from_cache),
 
         .hazard_control(hazard_control)
     );
