@@ -26,9 +26,9 @@ module cache(
     input   wire        inst_cache_dok  ,
 
     output  wire        data_cache_req  ,
-    output  wire [31:0] data_cache_addr ,
     output  wire        data_cache_wr   ,
     output  wire [1:0]  data_cache_size ,
+    output  wire [31:0] data_cache_addr ,
     output  wire [31:0] data_cache_wdata,
     input   wire [31:0] data_cache_rdata,
     input   wire        data_cache_dok   
@@ -50,9 +50,6 @@ module cache(
     assign inst_cache_wdata = 32'b0;
     assign inst_cache_addr = (~inst_addr_exception)?inst_sram_addr:32'b0;
         //data
-    assign data_cache_addr = (~data_addr_exception)?data_sram_addr:32'b0;
-    assign data_cache_wdata = data_sram_wdata;
-    assign data_cache_wr = |data_sram_wen;
     wire [1:0] size;
     assign size = data_cache_wr && (data_sram_wen == 4'b0001 ||data_sram_wen == 4'b0010 || data_sram_wen == 4'b0100 || data_sram_wen == 4'b1000 )?2'b00:
                        data_cache_wr && (data_sram_wen == 4'b0011 ||data_sram_wen == 4'b1100 )?2'b01:
@@ -86,6 +83,9 @@ module cache(
         .data_sram_rdata    (data_sram_rdata ),
 
         .data_cache_req     (data_cache_req  ),
+        .data_cache_wr      (data_cache_wr   ),
+        .data_cache_addr    (data_cache_addr ),
+        .data_cache_wdata   (data_cache_wdata),
         .data_cache_rdata   (data_cache_rdata),
         .data_cache_dok     (data_cache_dok  )
     );

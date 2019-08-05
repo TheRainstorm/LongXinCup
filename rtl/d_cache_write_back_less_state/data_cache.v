@@ -11,6 +11,9 @@ module data_cache(
     output  wire [31:0] data_sram_rdata ,
     //arbitrater
     output  wire        data_cache_req  ,
+    output  wire        data_cache_wr   ,
+    output  wire [31:0] data_cache_addr ,
+    output  wire [31:0] data_cache_wdata,
     input   wire [31:0] data_cache_rdata,
     input   wire        data_cache_dok
 );
@@ -111,6 +114,8 @@ module data_cache(
     assign data_cache_addr = (state == LM)? data_sram_addr :
                             (state == WB)? {cache_tag, addr_index, data_sram_addr[1:0]}:     //cache_tag + index + byteoffset
                                                 32'b0;
+    //data req wr
+    assign data_cache_wr = (state == WB)? 1'b1 : 1'b0;
     //data req wdata 
     assign data_cache_wdata = ~exclude_addr? cache_data : data_sram_wdata;   //only write back will write mem; update: when write outer address
     // //data req wen
