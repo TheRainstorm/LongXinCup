@@ -39,7 +39,7 @@ module mips (
 	datapath Datapath(
 		.clk(clk),.rst(rst),
         .int_hard(int),
-        .stall_from_cache(~stall_from_cache),
+        .stall_from_cache(stall_from_cache),
         //control
         .instrD(instrD),
         .flush_exceptM(flush_exceptM),

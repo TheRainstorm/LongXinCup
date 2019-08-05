@@ -291,7 +291,7 @@ module datapath(
         .clk(clk),.rst(rst),
         .a(alu_src_aE),.b(alu_src_bE),.hilo(alu_src_hiloE),.sa(saE),
         .alu_control(alu_controlE),
-        .en(stall_from_cache),
+        .en(~stall_from_cache),
 
         .y(alu_outE),
         .overflow(overflowE),
