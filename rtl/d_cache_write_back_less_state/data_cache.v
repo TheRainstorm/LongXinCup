@@ -128,7 +128,7 @@ module data_cache(
     assign data_sram_mask = { {8{data_sram_wen[3]}}, {8{data_sram_wen[2]}}, {8{data_sram_wen[1]}}, {8{data_sram_wen[0]}} };
     assign data_sram_wdata_masked = (data_sram_mask & data_sram_wdata) | (~data_sram_mask & cache_data);
 
-    assign d_cache_write_data_data_part = (read) ? data_cache_rdata_save : data_sram_wdata_masked ;
+    assign d_cache_write_data_data_part = (read) ? data_cache_rdata : data_sram_wdata_masked ;
     always @(posedge clk) begin
         if(~resetn) begin
             d_cache_write_en <= 1'b0;
