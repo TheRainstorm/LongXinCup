@@ -7918,7 +7918,7 @@ bfc04e44:	3c08800d 	lui	t0,0x800d
 /home/yfy/func_test_v0.01/soft/func/inst/n65_syscall_ex.S:9
 bfc04e48:	24120001 	li	s2,1
 /home/yfy/func_test_v0.01/soft/func/inst/n65_syscall_ex.S:10
-bfc04e4c:	ad120000 	sw	s2,0(t0)
+bfc04e4c:	ad120000 	sw	s2,0(t0)         //
 /home/yfy/func_test_v0.01/soft/func/inst/n65_syscall_ex.S:12
 bfc04e50:	40805800 	mtc0	zero,$11
 /home/yfy/func_test_v0.01/soft/func/inst/n65_syscall_ex.S:13
