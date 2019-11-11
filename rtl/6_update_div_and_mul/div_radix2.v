@@ -14,6 +14,10 @@ module div_radix2(
     output wire         div_stall,
     output [63:0]       result
     );
+    /*
+    1. 先取绝对值，计算出余数和商。再根据被除数、除数符号对结果调整
+    2. 计算过程中，由于保证了remainer为正，因此最高位为0，可以用32位存储。而除数需用33位
+    */
 
     reg [63:0] SR; //shift register
     reg [32 :0] NEG_DIVISOR;  //divisor 2's complement
@@ -26,7 +30,7 @@ module div_radix2(
     wire [31:0] remainer, quotient;
 
     assign divident_abs = (sign & a[31]) ? ~a + 1'b1 : a;
-    assign divisor_abs = (sign & b[31]) ? ~{1'b1,b} + 1'b1 : {1'b0,b};
+    //余数符号与被除数相同
     assign remainer = (sign & a[31]) ? ~REMAINER + 1'b1 : REMAINER;
     assign quotient = sign & (a[31] ^ b[31]) ? ~QUOTIENT + 1'b1 : QUOTIENT;
     assign result = {remainer,quotient};
@@ -44,44 +48,33 @@ module div_radix2(
     reg start_cnt;
     always @(posedge clk, posedge rst) begin
         if(rst) begin
-            cnt <= 33;
+            cnt <= 0;
             start_cnt <= 0;
         end
         else if(!start_cnt & valid) begin
-            cnt <= 0;
+            cnt <= 1;
             start_cnt <= 1;
+
+            //Register init
+            SR[63:0] <= {31'b0,divident_abs,1'b0}; //left shift one bit initially
+            NEG_DIVISOR <= (sign & b[31]) ? {1'b1,b} : ~{1'b0,b} + 1'b1; //divisor_abs的补码
         end
         else if(start_cnt) begin
-            if(cnt == 33) begin
+            if(cnt==32) begin
+                cnt <= 0;
                 start_cnt <= 0;
-            end
-            else begin
-                cnt <= cnt + 1;
-            end
-        end
-    end
-
-    always @(cnt) begin
-        case(cnt)
-            0: begin
-                SR[63:0] <= {31'b0,divident_abs,1'b0}; //left shift one bit initially
-                NEG_DIVISOR <= ~divisor_abs + 1'b1;
-            end
-            32: begin
+                
+                //Output result
                 SR[63:32] <= mux_result[31:0];
                 SR[0] <= CO;
             end
-            33: begin
-                SR <= 64'b0;
-                NEG_DIVISOR <= 33'b0;
-            end
-            default: begin
+            else begin
+                cnt <= cnt + 1;
+
                 SR[63:0] <= {mux_result[30:0],SR[31:1],CO,1'b0}; //wsl: write and shift left
             end
-        endcase
+        end
     end
-
     
-    assign div_stall = (cnt == 33 || cnt == 32) ? 1'b0 : 1'b1;
+    assign div_stall = |cnt; //只有当cnt=0时不暂停
 endmodule
-
