@@ -22,6 +22,8 @@ module div_self_align(
     3. SR的HW扩展成了33位，防止无符号数除法时，初始化左移1位时，把最高位的1抹去。
     */
 
+    reg [31:0] a_save, b_save;
+    
     reg [64:0] SR; //shift register
     reg [31:0] REMAINER;  //divisor 2's complement
     wire [31:0] QUOTIENT;
@@ -37,8 +39,8 @@ module div_self_align(
     assign divident_abs = (sign & a[31]) ? ~a + 1'b1 : a;
     assign divisor_abs = (sign & b[31]) ? ~b + 1'b1 : b;
     //余数符号与被除数相同
-    assign remainer = div_stall ? 32'b0 : (sign & a[31]) ? ~REMAINER + 1'b1 : REMAINER;
-    assign quotient = div_stall ? 32'b0 : sign & (a[31] ^ b[31]) ? ~QUOTIENT + 1'b1 : QUOTIENT;
+    assign remainer = (sign & a_save[31]) ? ~REMAINER + 1'b1 : REMAINER;
+    assign quotient = sign & (a_save[31] ^ b_save[31]) ? ~QUOTIENT + 1'b1 : QUOTIENT;
     assign result = {remainer,quotient};
 
     wire CO;
@@ -68,6 +70,11 @@ module div_self_align(
             start <= 1'b1;
             left_shift <= 1'b1;
             div_stall <= 1'b1;
+
+            //save a,b
+            a_save <= a;
+            b_save <= b;
+
             //Initial register
             REMAINER <= divident_abs;
             SR[64:32] <= {divisor_abs[31:0],1'b0};  //初始化左移一格
