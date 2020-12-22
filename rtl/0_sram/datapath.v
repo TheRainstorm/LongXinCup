@@ -54,7 +54,7 @@ module datapath(
     wire stallF, stallE, stallM, stallW;
     wire flushE;
     //data
-    wire [31:0] pc, pc_next_temp, pc_next, pcF, pc_temp, pc_plus4F, pc_plus4D, pc_plus4E, pc_branchD, pc_jumpD;
+    wire [31:0] pc_next_temp, pc_next, pcF, pc_temp, pc_plus4F, pc_plus4D, pc_plus4E, pc_branchD, pc_jumpD;
     wire [31:0] instrF, instrD, imm_extendD, imm_extendE, imm_extend_sl2, alu_outM, alu_outW;
     wire [4:0] rsD, rtD, rdD, rsE, rtE, rdE, rdM, rdW, write_regE, write_regM, write_regW, saD, saE;
     wire [31:0] rd1D, rd2D, rd1E, rd2E, alu_src_aE, alu_src_bE, alu_src_aE_temp, alu_src_bE_temp;
@@ -88,7 +88,7 @@ module datapath(
 
     //debug
     wire [39:0] ascii;
-    wire start;
+    wire pc_reg_ceF;
 
     //main_control
     assign reg_write_enD    = main_control[0];
@@ -130,28 +130,27 @@ module datapath(
 
     //MIPS interface
     assign PC = pcF;
-    assign Instr_en = start && ~stallF && ~flush_exceptW;
+    assign Instr_en = pc_reg_ceF && ~stallF && ~flush_exceptW;
     assign Mem_addr = final_addrM ;
     assign Mem_en = mem_enM && ~flush_exceptW; //5W flush, 4M write memory will create error
     assign Mem_write_en = mem_write_enM;
     assign Write_data = final_write_dataM;
 
 //Fetch stage
-    assign pcF = pc;
-    pc #(32) _PC(
+    pc #(32) pc(
         .clk(clk),.en(~stallF || flush_exceptW),.rst(rst),
-        .d(pc_next),
+        .pc_next(pc_next),
 
-        .q(pc),
-        .start(start)
+        .pc(pcF),
+        .ce(pc_reg_ceF)
     );
     //pc_next select
     mux4 #(32) MUX4_PC(.d0(pc_plus4F),.d1(pc_branchD),.d2(pc_jumpD),.d3(pc_control_src_a),.s(pc_srcD),.y(pc_next_temp));
     mux2 #(32) MUX2_PC(pc_next_temp, pc_exceptW, pc_trapW, pc_next);
     //pc plus4F
-    adder #(32) Adder_1(.carryin(1'b0),.x(pc),.y(32'd4),.s(pc_plus4F));
+    adder #(32) Adder_1(.carryin(1'b0),.x(pcF),.y(32'd4),.s(pc_plus4F));
     //pc_errorF
-    assign pc_errorF = (start && pcF[1:0] != 2'b00)?1'b1:1'b0;
+    assign pc_errorF = (pc_reg_ceF && pcF[1:0] != 2'b00)?1'b1:1'b0;
     //instrF
     assign instrF = Instr;
 //Decode stage
